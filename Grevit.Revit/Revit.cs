@@ -92,6 +92,16 @@ namespace Grevit.Revit
 
             getFaceRefButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "http://grevit.net/"));
 
+            PushButton speckleButton = grevitPanel.AddItem( new PushButtonData( "Speckle Client", "Speckle Client", path, "Grevit.Revit.GrevitFaceReference" ) ) as PushButton;
+            
+            speckleButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                Properties.Resources.speckle.GetHbitmap(),
+                IntPtr.Zero,
+                System.Windows.Int32Rect.Empty,
+                BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
+
+            speckleButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "https://github.com/speckleworks/Grevit" ) );
+
             return Result.Succeeded;
         }
 
@@ -195,7 +205,7 @@ namespace Grevit.Revit
         /// <summary>
         /// Revit Template Folder for creating template based family instances
         /// </summary>
-        public static string RevitTemplateFolder = String.Format(@"C:\ProgramData\Autodesk\RAC {0}\Family Templates\English",Version);
+        public static string RevitTemplateFolder = String.Format(@"C:\ProgramData\Autodesk\RAC {0}\Family Templates\English", Version);
 
         public Result BuildModel(Grevit.Types.ComponentCollection components)
         {
