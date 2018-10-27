@@ -157,26 +157,26 @@ namespace Grevit.Revit
     {
       var restApi = "https://hestia.speckle.works/api/v1";
 
-      var streamId = Microsoft.VisualBasic.Interaction.InputBox( "StreamId?", "StreamId", "SkdXGWM37" );  // has some floors in it
+      // best way to get user input ever
+      var streamId = Microsoft.VisualBasic.Interaction.InputBox( "StreamId?", "StreamId", "SkdXGWM37" );  // this hardcoded streamId has some grevit slabs in.
 
-
+      // create a light weight client
       var myClient = new SpeckleApiClient( restApi );
-      var objects = myClient.StreamGetObjectsAsync( streamId, "" ).Result.Resources;
+      // get the stream objects & force sync
+      var objects = myClient.StreamGetObjectsAsync( streamId, "" ).Result.Resources; 
 
       var hack = new Grevit.Types.Line(); // the grevit types assembly is not loaded yet in the app domain, so this forces it to load. 
 
+      // this makes possible native deserialisation by the speckle converter
       var grevitObjects = SpeckleCore.Converter.Deserialise( objects );
 
-      var copy = "";
-
+      // create a grevit collection
       Grevit.Types.ComponentCollection myCollection = new ComponentCollection();
 
       foreach ( var obj in grevitObjects )
         myCollection.Items.Add( obj as Component );
 
-      //myCollection.Items.AddRange( grevitObjects );
-
-      // Get Environment Variables
+      // Push back into grevit (copy paste from the grevit command).
       UIApplication uiApp = commandData.Application;
       GrevitBuildModel model = new GrevitBuildModel( uiApp.ActiveUIDocument.Document );
       model.BuildModel( myCollection );
