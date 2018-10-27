@@ -1,7 +1,7 @@
 //
 //  Grevit - Create Autodesk Revit (R) Models in McNeel's Rhino Grassopper 3D (R)
 //  For more Information visit grevit.net or food4rhino.com/project/grevit
-//  Copyright (C) 2015
+//  Copyright (C) 2018
 //  Authors: Maximilian Thumfart,
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -46,7 +46,11 @@ namespace Grevit.Revit
     /// </summary>
     public static class CreateExtension
     {
-
+        /// <summary>
+        /// Create Revit Filter
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         public static Element Create(this Grevit.Types.Filter filter)
         {
             List<ElementId> categories = new List<ElementId>();
@@ -64,9 +68,6 @@ namespace Grevit.Revit
                         if (!parameters.ContainsKey(parameter.Definition.Name)) parameters.Add(parameter.Definition.Name, parameter.Id);
                 }
             }
-
-
-
 
             ParameterFilterElement parameterFilter = null;
 
@@ -149,8 +150,6 @@ namespace Grevit.Revit
 
             return parameterFilter;
         }
-
-
 
 
         /// <summary>
@@ -483,10 +482,10 @@ namespace Grevit.Revit
             // Create the new Level
             Autodesk.Revit.DB.Level newLevel = Autodesk.Revit.DB.Level.Create(GrevitBuildModel.document, level.height);
 #else
-      Autodesk.Revit.DB.Level newLevel = GrevitBuildModel.document.Create.NewLevel( level.height );
+            Autodesk.Revit.DB.Level newLevel = GrevitBuildModel.document.Create.NewLevel( level.height );
 #endif
-      // Set the Levels name
-      newLevel.Name = level.name;
+             // Set the Levels name
+            newLevel.Name = level.name;
 
             // If we should create a view with it
             if (level.addView)
@@ -517,9 +516,10 @@ namespace Grevit.Revit
             XYZ location = column.location.ToXYZ();
             XYZ top = column.locationTop.ToXYZ();
 
+            // Make sure the lower location is really lower in Z than the upper one.
+            // Otherwise Revit will fail creating the column
             XYZ lower = (location.Z < top.Z) ? location : top;
             XYZ upper = (location.Z < top.Z) ? top : location;
-
 
             Element familyElement = GrevitBuildModel.document.GetElementByName(typeof(FamilySymbol), column.FamilyOrStyle, column.TypeOrLayer, out found, BuiltInCategory.OST_Columns);
             if (familyElement == null)
@@ -528,19 +528,13 @@ namespace Grevit.Revit
 
             Autodesk.Revit.DB.FamilyInstance familyInstance = null;
 
-
-
             if (familyElement != null && levelElement != null && familyElement != null)
             {
                 // Cast the FamilySymbol and the Level
                 FamilySymbol sym = (FamilySymbol)familyElement;
                 if (!sym.IsActive) sym.Activate();
 
-
-
                 Autodesk.Revit.DB.Level level = (Autodesk.Revit.DB.Level)levelElement;
-
-
 
                 // If the column already exists update it
                 // Otherwise create a new one
@@ -612,13 +606,7 @@ namespace Grevit.Revit
         /// <returns></returns>
         public static Element Create(this Grevit.Types.Grid grid)
         {
-
-//#if (Revit2017 || Revit2018|| Revit2019)
             Autodesk.Revit.DB.Grid gridline = Autodesk.Revit.DB.Grid.Create(GrevitBuildModel.document, Autodesk.Revit.DB.Line.CreateBound(grid.from.ToXYZ(), grid.to.ToXYZ()));
-//#else
-            // Create a new gridline
-//            Autodesk.Revit.DB.Grid gridline = GrevitBuildModel.document.Create.NewGrid(Autodesk.Revit.DB.Line.CreateBound(grid.from.ToXYZ(), grid.to.ToXYZ()));
-//#endif
 
             // If a name is supplied, set the name
             if (grid.Name != null && grid.Name != "") gridline.Name = grid.Name;
@@ -742,8 +730,6 @@ namespace Grevit.Revit
                 // Set a reasonable width
                 double width = textnote.text.Length * 2;
 
-                
-
                 // return a new Textnote
 #if (!Revit2015)
                 Autodesk.Revit.DB.TextNoteType type = (Autodesk.Revit.DB.TextNoteType)new FilteredElementCollector(GrevitBuildModel.document).OfClass(typeof(Autodesk.Revit.DB.TextNoteType)).FirstOrDefault();
@@ -776,23 +762,8 @@ namespace Grevit.Revit
 
             if (type == null) return null;
 
-            // Get the two slope points
-            XYZ slopePointBottom = curves[0].GetEndPoint(0);
-//            XYZ slopeTopPoint = slab.top.ToXYZ();
-
-            // get a Z Value from an outline point to check if the slope points are in this plane
-//            double outlineZCheckValue = curves[0].GetEndPoint(0).Z;
-
-            // If one of the points is not in the same Z plane
-            // Create new points replacing the Z value
- //           if (!slopePointBottom.Z.Equals(outlineZCheckValue) || !slopeTopPoint.Z.Equals(outlineZCheckValue))
- //           {
-//                slopePointBottom = new XYZ(slopePointBottom.X, slopePointBottom.Y, outlineZCheckValue);
-//                slopeTopPoint = new XYZ(slopeTopPoint.X, slopeTopPoint.Y, outlineZCheckValue);
-//            }
-
-            // Create a new slope line between the points
-//            Autodesk.Revit.DB.Line slopeLine = Autodesk.Revit.DB.Line.CreateBound(slopePointBottom, slopeTopPoint);
+            // Get any point to find a matching level around Z
+            XYZ anyPoint = curves[0].GetEndPoint(0);
 
             // Sort the outline curves contiguous
             Utilities.SortCurvesContiguous(GrevitBuildModel.document.Application.Create, curves);
@@ -802,7 +773,7 @@ namespace Grevit.Revit
             foreach (Curve c in curves) outlineCurveArray.Append(c);
 
             // get the supposed level
-            Element levelElement = GrevitBuildModel.document.GetLevelByName(slab.levelbottom,slopePointBottom.Z);
+            Element levelElement = GrevitBuildModel.document.GetLevelByName(slab.levelbottom,anyPoint.Z);
             if (levelElement != null)
             {
                 // Create a new slab
@@ -923,8 +894,6 @@ namespace Grevit.Revit
                     Autodesk.Revit.DB.Parameter param = wall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET);
                     if (param != null && !param.IsReadOnly) { param.Set(offset); }
                 }
-
-                
 
                 w.SetParameters(wall);
                 w.StoreGID(wall.Id);
@@ -1165,30 +1134,45 @@ namespace Grevit.Revit
             // Always returns null as it handles
             // parameters and GIDs within this method
             return null;
-
         }
 
+        /// <summary>
+        /// Create Revit FaceWall
+        /// Creates a Wall on a face itentified by a stable element representation
+        /// </summary>
+        /// <param name="faceWall"></param>
+        /// <returns></returns>
         public static Element Create(this Grevit.Types.FaceWall faceWall)
         {
+            // Get stable representation
             Reference reference = Reference.ParseFromStableRepresentation(GrevitBuildModel.document, faceWall.Reference);
             if (reference == null) return null;
 
+            // FInd matching walltype
             Element wallTypeElement = GrevitBuildModel.document.GetElementByName(typeof(Autodesk.Revit.DB.WallType), faceWall.TypeOrLayer);
             if (wallTypeElement == null) return null;
 
+            // Parse wall location and create wall using the stable reference
             WallLocationLine loc = WallLocationLine.CoreCenterline;
             Enum.TryParse<WallLocationLine>(faceWall.Location, out loc);
             var fw =  Autodesk.Revit.DB.FaceWall.Create(GrevitBuildModel.document, wallTypeElement.Id,loc, reference);
             return fw;
         }
 
+        /// <summary>
+        /// Create Revit SelectionSet
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
         public static Element Create(this Grevit.Types.SelectionSet selection)
         {
+            // load existing filter by name or create new if it doesn't exist
             SelectionFilterElement filter = (SelectionFilterElement)Utilities.GetElementByName(GrevitBuildModel.document, typeof(SelectionFilterElement), selection.Name);
-
             if (filter == null || filter.Name != selection.Name)
                 filter = Autodesk.Revit.DB.SelectionFilterElement.Create(GrevitBuildModel.document, selection.Name);
 
+            // check if supplied elementIDs have been created by Grevit and set them
+            // as filter elementIds if they aren't invalid
             List<ElementId> elements = new List<ElementId>();
             foreach (string id in selection.IDs)
             {
@@ -1206,6 +1190,11 @@ namespace Grevit.Revit
             return filter;
         }
 
+        /// <summary>
+        /// Create Revit Shaft
+        /// </summary>
+        /// <param name="shaft"></param>
+        /// <returns></returns>
         public static Element Create(this Grevit.Types.Shaft shaft)
         {
             List<Curve> curves = new List<Curve>();
@@ -1217,6 +1206,7 @@ namespace Grevit.Revit
                     curves.Add(curve);
             }
 
+            // Outline must be sorted correctly otherwise Revit will fail
             Utilities.SortCurvesContiguous(GrevitBuildModel.document.Application.Create, curves);
 
             // Create a new surve array for creating the slab
@@ -1232,3 +1222,4 @@ namespace Grevit.Revit
 
     }
 }
+
