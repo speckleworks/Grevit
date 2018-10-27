@@ -245,6 +245,8 @@ namespace Grevit.Revit
 
             #region createComponents
 
+            // using one transaction for all elements
+            // this way a Grevit import is one simple UNDO step in Revit
             Transaction trans = new Transaction(GrevitBuildModel.document, "GrevitCreate");
             trans.Start();
 
