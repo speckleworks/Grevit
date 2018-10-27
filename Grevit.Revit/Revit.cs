@@ -154,12 +154,18 @@ namespace Grevit.Revit
   [Transaction( TransactionMode.Manual )]
   public class SpeckleCommand : IExternalCommand
   {
+    SpeckleForm.MainWindow myForm;
     public Result Execute( ExternalCommandData commandData, ref string message, ElementSet elements )
     {
-      var myForm = new SpeckleForm.MainWindow( commandData.Application );
-      myForm.Show();
-      return Result.Succeeded;
-      //throw new NotImplementedException();
+      if ( myForm == null )
+      {
+        myForm = new SpeckleForm.MainWindow( commandData.Application );
+        myForm.Show();
+      }
+      else
+        myForm.Focus();
+
+      return Result.Succeeded;      
     }
   }
 

@@ -5,9 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpeckleForm"
         mc:Ignorable="d"
-        Title="Window1" Height="300" Width="300">
-    <Grid>
-    <Image Margin="18,28,10,20.5" Source="2xlogo@4x.png" Stretch="Fill"/>
-
+        Title="Window1" Height="220.53" Width="300">
+  <Window.Effect>
+    <DropShadowEffect BlurRadius="20" Direction="0"/>
+  </Window.Effect>
+  <Grid>
+    <Label Content="O Hai!" HorizontalAlignment="Left" Margin="114,44,0,0" VerticalAlignment="Top"/>
+    <TextBox Name="StreamIdInput" Text="{Binding myStreamId}" HorizontalAlignment="Left" Height="23" Margin="78,75,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+    <Button  Click="Button_Click" Content="PullStuff" HorizontalAlignment="Left" Margin="101,103,0,0" VerticalAlignment="Top" Width="75"/>
   </Grid>
 </Window>
