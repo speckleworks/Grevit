@@ -207,27 +207,34 @@ namespace Grevit.Revit
         /// </summary>
         public static string RevitTemplateFolder = String.Format(@"C:\ProgramData\Autodesk\RAC {0}\Family Templates\English", Version);
 
+        /// <summary>
+        /// Build Revit Model from a Grevit Component Collection
+        /// Make sure the Component Collection has update, delete and scale properties set
+        /// </summary>
+        /// <param name="components">Grevit Component Collection</param>
+        /// <returns></returns>
         public Result BuildModel(Grevit.Types.ComponentCollection components)
         {
             bool delete = false;
 
+            // if components collection hasn't been supplied
+            // open the Grevit UI and retrieve components from a Grevit Server
             if (components == null)
             {
                 // Create new Grevit Client sending existing Families 
                 Grevit.Client.ClientWindow grevitClientDialog = new Grevit.Client.ClientWindow(document.GetFamilies());
-                //Grevit.Serialization.Client grevitClientDialog = new Grevit.Serialization.Client(document.GetFamilies());
 
                 // Show Client Dialog
                 grevitClientDialog.ShowWindow();
-                //if (grevitClientDialog.ShowDialog() == System.Windows.Forms.DialogResult.Cancel) return Result.Cancelled;
 
                 // Set the received component collection
                 components = grevitClientDialog.componentCollection;
+            } 
 
-                delete = grevitClientDialog.componentCollection.delete;
+            // set element deletion flag and scale factor from collection
+            delete = components.delete;
+            Scale = components.scale;
 
-                Scale = grevitClientDialog.componentCollection.scale;
-            }
 
             RoofShapePoints = new List<Tuple<ElementId,CurveArray>>();
 
