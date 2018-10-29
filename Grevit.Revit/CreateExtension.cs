@@ -375,9 +375,6 @@ namespace Grevit.Revit
             return null;
         }
 
-
-        public static string ConceptualMassTemplatePath = GrevitBuildModel.RevitTemplateFolder + @"\Conceptual Mass\Metric Mass.rft";
-
         /// <summary>
         /// Create Extrusion
         /// </summary>
@@ -385,6 +382,7 @@ namespace Grevit.Revit
         /// <returns></returns>
         public static Element Create(this Grevit.Types.SimpleExtrusion extrusion)
         {
+            string ConceptualMassTemplatePath = GrevitBuildModel.GetConceptualMassRFT(GrevitBuildModel.document);
             // If the file doesnt exist ask the user for a new template
             if (!File.Exists(ConceptualMassTemplatePath))
             {
