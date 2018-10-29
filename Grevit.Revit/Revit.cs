@@ -205,7 +205,19 @@ namespace Grevit.Revit
         /// <summary>
         /// Revit Template Folder for creating template based family instances
         /// </summary>
-        public static string RevitTemplateFolder = String.Format(@"C:\ProgramData\Autodesk\RAC {0}\Family Templates\English", Version);
+        public static string GetConceptualMassRFT(Document document)
+        {
+            string templateDir = document.Application.FamilyTemplatePath;
+            string templateName = @"\Conceptual Mass\Metric Mass.rft";
+            if (templateDir == null || templateDir == string.Empty || !System.IO.Directory.Exists(templateDir))
+            {
+                string arc = String.Format(@"C:\ProgramData\Autodesk\RAC {0}\Family Templates\English", Version);
+                string rvt = String.Format(@"C:\ProgramData\Autodesk\RVT {0}\Family Templates\English", Version);
+                if (System.IO.Directory.Exists(arc)) templateDir = arc;
+                if (System.IO.Directory.Exists(rvt)) templateDir = rvt;
+            }
+            return Path.Combine(templateDir, templateName);
+        }
 
         /// <summary>
         /// Build Revit Model from a Grevit Component Collection
