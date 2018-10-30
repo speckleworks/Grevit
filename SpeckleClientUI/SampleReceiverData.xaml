@@ -1,0 +1,9 @@
+﻿<spk:Receivers
+  xmlns="clr-namespace:SpeckleClientUI"
+  xmlns:spk="clr-namespace:SpeckleClientUI"
+  xmlns:system="clr-namespace:System;assembly=mscorlib">
+  <spk:ReceiverViewModel StreamId="21sdf;" StreamName="Beams to create" />
+  <spk:ReceiverViewModel StreamId="dsfsa5" StreamName="Columns" />
+  <spk:ReceiverViewModel StreamId="45ds34" StreamName="Sample stream" />
+  <spk:ReceiverViewModel StreamId="sdfsdg" StreamName="Hello Dimitrie!" />
+</spk:Receivers>
