@@ -1,8 +1,9 @@
 ﻿<ResourceDictionary
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:local="clr-namespace:SpeckleClientUI"
-  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+  xmlns:data="clr-namespace:SpeckleClientUI.Data"
+  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:src="clr-namespace:SpeckleClientUI.ValueConverters">
   <ResourceDictionary.MergedDictionaries>
     <!--  controls  -->
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
@@ -12,6 +13,8 @@
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Expander.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListView.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ProgressBar.xaml" />
 
 
     <!--  primary color  -->
@@ -37,12 +40,24 @@
 
   </ResourceDictionary.MergedDictionaries>
 
+  <!--  value converters  -->
+  <src:BoolVisibConverter x:Key="BoolVisibConverter" />
+
   <Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="{x:Type Button}">
     <Setter Property="Margin" Value="0,8,0,8" />
   </Style>
   <Style BasedOn="{StaticResource MaterialDesignTextBox}" TargetType="{x:Type TextBox}">
     <Setter Property="Margin" Value="0,8,0,8" />
   </Style>
+
+  <Style x:Key="ReadonlyTextBox" TargetType="{x:Type TextBox}">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="IsReadOnly" Value="True" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+
 
   <Style BasedOn="{StaticResource MaterialDesignExpander}" TargetType="{x:Type Expander}">
     <Setter Property="HeaderTemplate">
@@ -54,22 +69,60 @@
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="auto" />
+              <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <!--  floating action button with progress  -->
             <Button
-              Name="PausePlayButton"
-              Grid.Row="1"
-              Width="30"
-              Height="30"
+              Width="35"
+              Height="35"
               materialDesign:ButtonProgressAssist.IsIndeterminate="{Binding Transmitting}"
               materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding Transmitting}"
               materialDesign:ButtonProgressAssist.Value="-1"
-              Style="{StaticResource MaterialDesignFloatingActionLightButton}"
-              ToolTip="Pause/Resume receiving">
-              <Grid>
-                <materialDesign:PackIcon
-                  Width="20"
-                  Height="24"
-                  Kind="Download" />
-              </Grid>
+              Command="data:Commands.ReceiveStream"
+              CommandParameter="{Binding}"
+              Style="{StaticResource MaterialDesignFloatingActionLightButton}">
+              <!--  simple example of toggling/animating pack icon with a data trigger  -->
+              <materialDesign:PackIcon Width="20" Height="20">
+                <materialDesign:PackIcon.Style>
+                  <Style BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}" TargetType="materialDesign:PackIcon">
+                    <Setter Property="Kind" Value="Download" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding Transmitting}" Value="False">
+                        <Setter Property="Kind" Value="Check" />
+                        <DataTrigger.EnterActions>
+                          <BeginStoryboard>
+                            <Storyboard>
+                              <DoubleAnimation
+                                Storyboard.TargetProperty="Opacity"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.8" />
+                            </Storyboard>
+                          </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                      </DataTrigger>
+
+                      <DataTrigger Binding="{Binding Expired}" Value="True">
+                        <Setter Property="Kind" Value="Check" />
+                        <DataTrigger.EnterActions>
+                          <BeginStoryboard>
+                            <Storyboard>
+                              <DoubleAnimation
+                                Storyboard.TargetProperty="Opacity"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.8" />
+                            </Storyboard>
+                          </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </materialDesign:PackIcon.Style>
+              </materialDesign:PackIcon>
             </Button>
             <TextBlock
               Grid.Column="1"
@@ -80,9 +133,9 @@
             <materialDesign:Chip
               Grid.Column="2"
               Margin="15,0,0,0"
-              Content="{Binding StreamId}"
-              FontFamily="Courier New" />
-
+              FontFamily="Courier New">
+              <TextBox Style="{StaticResource ReadonlyTextBox}" Text="{Binding StreamId}" />
+            </materialDesign:Chip>
           </Grid>
 
         </DataTemplate>

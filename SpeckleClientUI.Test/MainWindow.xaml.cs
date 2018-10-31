@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using SpeckleClientUI;
 
 namespace SpeckleClientUI.Test
 {
@@ -23,19 +24,7 @@ namespace SpeckleClientUI.Test
         public MainWindow()
         {
             InitializeComponent();
-            receiver.DataContext = new List<ReceiverViewModel>
-            {
-                new ReceiverViewModel
-                {
-                    StreamName="TEST",
-                    StreamId="123",
-                },
-                                new ReceiverViewModel
-                {
-                    StreamName="AAAA",
-                    StreamId="sdfsdf",
-                },
-            };
-        }
+
+        } 
     }
 }

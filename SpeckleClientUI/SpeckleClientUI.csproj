@@ -54,12 +54,14 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SpeckleExpander.cs" />
-    <Compile Include="Receiver.xaml.cs">
-      <DependentUpon>Receiver.xaml</DependentUpon>
+    <Compile Include="Data\Commands.cs" />
+    <Compile Include="ReceiversUi.xaml.cs">
+      <DependentUpon>ReceiversUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ReceiverViewModel.cs" />
-    <Page Include="Receiver.xaml">
+    <Compile Include="Receiver.cs" />
+    <Compile Include="ValueConverters\BoolVisibConverter.cs" />
+    <Compile Include="ValueConverters\InvertBoolConverter.cs" />
+    <Page Include="ReceiversUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -71,9 +73,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="CustomControl1.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -98,6 +97,19 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpeckleAccountManager\SpecklePopup.csproj">
+      <Project>{d65594c8-ea2e-46ca-a756-b1634edc3ae3}</Project>
+      <Name>SpecklePopup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpeckleCore\SpeckleCore\SpeckleCore.csproj">
+      <Project>{cfe27d3d-8a1a-43f9-9387-8fd9e119e174}</Project>
+      <Name>SpeckleCore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ViewModels\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

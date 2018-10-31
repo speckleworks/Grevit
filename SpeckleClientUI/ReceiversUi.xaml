@@ -1,0 +1,186 @@
+﻿<UserControl
+  x:Class="SpeckleClientUI.ReceiversUi"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:data="clr-namespace:SpeckleClientUI.Data"
+  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:src="clr-namespace:SpeckleClientUI.ValueConverters"
+  d:DesignHeight="450"
+  d:DesignWidth="500"
+  mc:Ignorable="d">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SpeckleClientUI;component/Themes/Generic.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <src:InvertBoolConverter x:Key="InvertBoolConverter" />
+    </ResourceDictionary>
+
+  </UserControl.Resources>
+  <UserControl.CommandBindings>
+    <CommandBinding
+      CanExecute="CommandBinding_CanExecute"
+      Command="data:Commands.ReceiveStream"
+      Executed="OnClickReceiveStream" />
+  </UserControl.CommandBindings>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto" />
+      <RowDefinition Height="auto" />
+    </Grid.RowDefinitions>
+    <StackPanel Orientation="Horizontal">
+      <TextBox
+        Name="StreamId"
+        Width="100"
+        Margin="10,10,0,10"
+        materialDesign:HintAssist.Hint="Stream ID"
+        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+        Text="{Binding StreamId, UpdateSourceTrigger=PropertyChanged}" />
+      <Button
+        Grid.Column="1"
+        Width="20"
+        Height="20"
+        Margin="0,0,5,0"
+        Padding="2"
+        BorderThickness="0"
+        Click="PasteClick"
+        Content="{materialDesign:PackIcon ContentPaste}"
+        Foreground="#4C4B4A"
+        IsEnabled="{Binding StreamTextBoxEnabled}"
+        ToolTip="Paste Stream ID" />
+      <Button
+        Margin="10"
+        Click="NewReceiverClick"
+        Content="NEW RECEIVER"
+        IsEnabled="{Binding ElementName=StreamId, Path=Text.Length}" />
+      <Button
+        Margin="10"
+        Click="AccountsClick"
+        Content="ACCOUNTS" />
+    </StackPanel>
+    <ScrollViewer
+      Grid.Row="1"
+      HorizontalScrollBarVisibility="Auto"
+      VerticalScrollBarVisibility="Auto">
+      <ItemsControl
+        Name="ReceiverItemsControl"
+        HorizontalContentAlignment="Stretch"
+        d:DataContext="{d:DesignData d:Source=SampleReceiverData.xaml}"
+        ItemsSource="{Binding}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid Margin="10">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <Button
+                Grid.RowSpan="2"
+                materialDesign:ButtonProgressAssist.IsIndeterminate="{Binding Transmitting}"
+                materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding Transmitting}"
+                materialDesign:ButtonProgressAssist.Value="-1"
+                Command="data:Commands.ReceiveStream"
+                CommandParameter="{Binding}"
+                Style="{StaticResource MaterialDesignFloatingActionLightButton}">
+                <!--  simple example of toggling/animating pack icon with a data trigger  -->
+                <materialDesign:PackIcon Width="25" Height="25">
+                  <materialDesign:PackIcon.Style>
+                    <Style BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}" TargetType="materialDesign:PackIcon">
+                      <Setter Property="Kind" Value="Download" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding Transmitting}" Value="False">
+                          <Setter Property="Kind" Value="Check" />
+                          <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                              <Storyboard>
+                                <DoubleAnimation
+                                  Storyboard.TargetProperty="Opacity"
+                                  From="0"
+                                  To="1"
+                                  Duration="0:0:0.8" />
+                              </Storyboard>
+                            </BeginStoryboard>
+                          </DataTrigger.EnterActions>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding Expired}" Value="True">
+                          <Setter Property="Kind" Value="Check" />
+                          <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                              <Storyboard>
+                                <DoubleAnimation
+                                  Storyboard.TargetProperty="Opacity"
+                                  From="0"
+                                  To="1"
+                                  Duration="0:0:0.8" />
+                              </Storyboard>
+                            </BeginStoryboard>
+                          </DataTrigger.EnterActions>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </materialDesign:PackIcon.Style>
+                </materialDesign:PackIcon>
+              </Button>
+              <TextBlock
+                Grid.Column="1"
+                Grid.ColumnSpan="2"
+                Margin="20,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="18"
+                Text="{Binding StreamName}" />
+              <materialDesign:Chip
+                Grid.Row="0"
+                Grid.Column="2"
+                Margin="15,0,0,0"
+                HorizontalAlignment="Right"
+                FontFamily="Courier New">
+                <TextBox Style="{StaticResource ReadonlyTextBox}" Text="{Binding StreamId}" />
+              </materialDesign:Chip>
+              <StackPanel
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="20,0,0,0"
+                Orientation="Horizontal">
+                <TextBlock Text="{Binding Email}" />
+                <TextBlock Text=" | " />
+                <TextBlock HorizontalAlignment="Right" Text="{Binding Server}" />
+              </StackPanel>
+
+
+
+
+            </Grid>
+            <!--<Expander
+              Margin="0"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Stretch"
+              BorderThickness="0"
+              Header="{Binding}"
+              IsExpanded="True">
+              <Grid Margin="24,8,24,16" TextBlock.Foreground="#999">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="auto" />
+                  <ColumnDefinition Width="*" />
+
+                </Grid.ColumnDefinitions>
+
+
+
+              </Grid>
+            </Expander>-->
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+
+  </Grid>
+</UserControl>
