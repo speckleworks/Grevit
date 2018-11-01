@@ -59,6 +59,10 @@
       <DependentUpon>ReceiversUi.xaml</DependentUpon>
     </Compile>
     <Compile Include="Receiver.cs" />
+    <Compile Include="UserControls\AutoCompleteComboBox.xaml.cs">
+      <DependentUpon>AutoCompleteComboBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\AutoCompleteComboBoxSetting.cs" />
     <Compile Include="ValueConverters\BoolVisibConverter.cs" />
     <Compile Include="ValueConverters\InvertBoolConverter.cs" />
     <Page Include="ReceiversUi.xaml">
@@ -72,6 +76,10 @@
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\AutoCompleteComboBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
