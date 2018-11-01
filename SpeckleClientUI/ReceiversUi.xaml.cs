@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using SpeckleClientUI;
+using SpeckleCore;
 
 namespace SpeckleClientUI
 {
@@ -23,6 +24,9 @@ namespace SpeckleClientUI
     public partial class ReceiversUi : UserControl
     {
         ObservableCollection<Receiver> _receivers = new ObservableCollection<Receiver>();
+        public delegate void ReceivedData(List<SpeckleObject> objs);
+        public event ReceivedData OnUpdateGlobal;
+
         public ReceiversUi()
         {
             InitializeComponent();
@@ -52,10 +56,13 @@ namespace SpeckleClientUI
 
         private void OnClickReceiveStream(object sender, ExecutedRoutedEventArgs e)
         {
-            var rvm = e.Parameter as Receiver;
+            var r = e.Parameter as Receiver;
 
-            rvm.Transmitting = true;
+           var objs = r.UpdateGlobal();
+            OnUpdateGlobal(objs);
         }
+
+      
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {

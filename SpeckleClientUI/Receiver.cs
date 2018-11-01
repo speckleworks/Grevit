@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -70,6 +71,24 @@ namespace SpeckleClientUI
 
 
             _client.IntializeReceiver(StreamId, "", "Dynamo", "", AuthToken);
+        }
+
+        public virtual List<SpeckleObject> UpdateGlobal()
+        {
+            Transmitting = true;
+            var getStream = _client.StreamGetAsync(_client.StreamId, null);
+            getStream.Wait();
+
+            StreamName = getStream.Result.Resource.Name;
+            //Layers = getStream.Result.Resource.Layers.ToList();
+
+            // TODO: check statement below with dimitrie
+            // we can safely omit the displayValue, since this is rhino!
+            Message = "Getting objects";
+
+            var payload = getStream.Result.Resource.Objects.Select(obj => obj._id).ToArray(); //.Where(o => !ObjectCache.ContainsKey(o._id)).
+            Transmitting = false;
+            return _client.ObjectGetBulkAsync(payload, "omit=displayValue").Result.Resources;
         }
 
         public virtual void UpdateMeta()

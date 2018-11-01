@@ -106,6 +106,10 @@
       <Project>{5ffc275e-4dc5-4351-a12d-10985bff4e04}</Project>
       <Name>SpeckleClientUI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SpeckleCore\SpeckleCore\SpeckleCore.csproj">
+      <Project>{cfe27d3d-8a1a-43f9-9387-8fd9e119e174}</Project>
+      <Name>SpeckleCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

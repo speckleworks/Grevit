@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using SpeckleClientUI;
+using SpeckleCore;
 
 namespace SpeckleClientUI.Test
 {
@@ -24,7 +25,13 @@ namespace SpeckleClientUI.Test
         public MainWindow()
         {
             InitializeComponent();
+            receiver.OnUpdateGlobal += this.Receiver_OnUpdateGlobal;
+        }
 
-        } 
+        private void Receiver_OnUpdateGlobal(List<SpeckleObject> objs)
+        {
+            Console.WriteLine(objs.ToString());
+            throw new NotImplementedException();
+        }
     }
 }
