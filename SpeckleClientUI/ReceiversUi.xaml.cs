@@ -87,7 +87,7 @@ namespace SpeckleClientUI
             myForm.ShowDialog();
         }
 
-        private void AccountsComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void AccountsComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (AccountsComboBox.SelectedIndex == -1)
             {
@@ -99,16 +99,28 @@ namespace SpeckleClientUI
 
             client.BaseUrl = account.RestApi;
             client.AuthToken = account.Token;
-            client.StreamsGetAllAsync().ContinueWith(tsk =>
-            {
-                Application.Current.Dispatcher.BeginInvoke(
-                  DispatcherPriority.Background,
-                  new Action(() =>
-                  {
-                      StreamsComboBox.ItemsSource = tsk.Result.Resources.ToList();
-                  }));
 
-            });
+            try
+            {
+                var getStreams = await client.StreamsGetAllAsync();
+                StreamsComboBox.ItemsSource = getStreams.Resources;
+            }
+            catch
+            {
+                // TODO: Handle bad/offline account
+            }
+
+            client.Dispose();
+            //client.StreamsGetAllAsync().ContinueWith(tsk =>
+            //{
+            //    Application.Current.Dispatcher.BeginInvoke(
+            //      DispatcherPriority.Background,
+            //      new Action(() =>
+            //      {
+            //          StreamsComboBox.ItemsSource = tsk.Result.Resources.ToList();
+            //      }));
+
+            //});
 
         }
     }

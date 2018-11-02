@@ -1,0 +1,14 @@
+﻿<Window x:Class="Grevit.Revit.SpeckleClientWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:speckle="clr-namespace:SpeckleClientUI;assembly=SpeckleClientUI"
+        xmlns:local="clr-namespace:Grevit.Revit"
+        mc:Ignorable="d"
+        Title="SpeckleClientWindow" Height="450" Width="800"
+        Closing="OnClosing">
+    <Grid>
+    <speckle:ReceiversUi Name="receiver" />
+  </Grid>
+</Window>

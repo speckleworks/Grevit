@@ -22,27 +22,34 @@ namespace SpeckleClientUI
         private bool _expired;
         private SpeckleApiClient _client;
 
-        internal string AuthToken { get => _authToken; set { _authToken = value; NotifyPropertyChanged("AuthToken"); } }
+        internal string AuthToken { get => _authToken; set { _authToken = value; NotifyPropertyChanged( "AuthToken" ); } }
 
 
-        public string RestApi { get => _restApi; set { _restApi = value; NotifyPropertyChanged("RestApi"); } }
-        public string Email { get => _email; set { _email = value; NotifyPropertyChanged("Email"); } }
-        public string Server { get => _server; set { _server = value; NotifyPropertyChanged("Server"); } }
-        public string StreamId { get => _streamId; set { _streamId = value; NotifyPropertyChanged("StreamId"); } }
-        public string StreamName { get => _streamName; set { _streamName = value; NotifyPropertyChanged("StreamName"); } }
-        public string Message { get => _message; set { _message = value; NotifyPropertyChanged("Message"); } }
-        public bool Transmitting { get => _transmitting; set { _transmitting = value; NotifyPropertyChanged("Transmitting");
+        public string RestApi { get => _restApi; set { _restApi = value; NotifyPropertyChanged( "RestApi" ); } }
+        public string Email { get => _email; set { _email = value; NotifyPropertyChanged( "Email" ); } }
+        public string Server { get => _server; set { _server = value; NotifyPropertyChanged( "Server" ); } }
+        public string StreamId { get => _streamId; set { _streamId = value; NotifyPropertyChanged( "StreamId" ); } }
+        public string StreamName { get => _streamName; set { _streamName = value; NotifyPropertyChanged( "StreamName" ); } }
+        public string Message { get => _message; set { _message = value; NotifyPropertyChanged( "Message" ); } }
+        public bool Transmitting
+        {
+            get => _transmitting;
+            set
+            {
+                _transmitting = value; NotifyPropertyChanged( "Transmitting" );
                 //little hack to get ui to refresh the canexecute binding 
-                Application.Current.Dispatcher.Invoke(
-                    DispatcherPriority.Normal, (DispatcherOperationCallback)delegate (object arg) {
-                        CommandManager.InvalidateRequerySuggested();
-                        return null;
-                    },
-                    null);
-        }}
-        public bool Expired { get => _expired; set { _expired = value; NotifyPropertyChanged("Expired"); } }
+                //Application.Current.Dispatcher.Invoke(
+                //    DispatcherPriority.Normal, ( DispatcherOperationCallback ) delegate ( object arg )
+                //    {
+                //        CommandManager.InvalidateRequerySuggested();
+                //        return null;
+                //    },
+                //    null );
+            }
+        }
+        public bool Expired { get => _expired; set { _expired = value; NotifyPropertyChanged( "Expired" ); } }
 
-        public Receiver(string streamid, string server, string restapi, string authtoken, string email)
+        public Receiver( string streamid, string server, string restapi, string authtoken, string email )
         {
             Transmitting = true;
 
@@ -52,31 +59,31 @@ namespace SpeckleClientUI
             RestApi = restapi;
             AuthToken = authtoken;
 
-            _client = new SpeckleApiClient(RestApi, true);
+            _client = new SpeckleApiClient( RestApi, true );
 
-            _client.OnReady += (sender, e) =>
+            _client.OnReady += ( sender, e ) =>
             {
                 UpdateMeta();
             };
 
             _client.OnWsMessage += OnWsMessage;
 
-            _client.OnError += (sender, e) =>
+            _client.OnError += ( sender, e ) =>
             {
-                Console.Write(e);
+                Console.Write( e );
                 //if (e.EventName == "websocket-disconnected")
                 //    return;
                 //Warning(e.EventName + ": " + e.EventData);
             };
 
 
-            _client.IntializeReceiver(StreamId, "", "Dynamo", "", AuthToken);
+            _client.IntializeReceiver( StreamId, "", "Dynamo", "", AuthToken );
         }
 
-        public virtual List<SpeckleObject> UpdateGlobal()
+        public virtual List<SpeckleObject> UpdateGlobal( )
         {
             Transmitting = true;
-            var getStream = _client.StreamGetAsync(_client.StreamId, null);
+            var getStream = _client.StreamGetAsync( _client.StreamId, null );
             getStream.Wait();
 
             StreamName = getStream.Result.Resource.Name;
@@ -86,22 +93,22 @@ namespace SpeckleClientUI
             // we can safely omit the displayValue, since this is rhino!
             Message = "Getting objects";
 
-            var payload = getStream.Result.Resource.Objects.Select(obj => obj._id).ToArray(); //.Where(o => !ObjectCache.ContainsKey(o._id)).
+            var payload = getStream.Result.Resource.Objects.Select( obj => obj._id ).ToArray(); //.Where(o => !ObjectCache.ContainsKey(o._id)).
             Transmitting = false;
-            return _client.ObjectGetBulkAsync(payload, "omit=displayValue").Result.Resources;
+            return _client.ObjectGetBulkAsync( payload, "omit=displayValue" ).Result.Resources;
         }
 
-        public virtual void UpdateMeta()
+        public virtual void UpdateMeta( )
         {
-            var result = _client.StreamGetAsync(_client.StreamId, "fields=name").Result;
+            var result = _client.StreamGetAsync( _client.StreamId, "fields=name" ).Result;
 
             StreamName = result.Resource.Name;
             Transmitting = false;
         }
 
-        public virtual void OnWsMessage(object source, SpeckleEventArgs e)
+        public virtual void OnWsMessage( object source, SpeckleEventArgs e )
         {
-            switch ((string)e.EventObject.args.eventType)
+            switch ( ( string ) e.EventObject.args.eventType )
             {
                 case "update-global":
                     Message = "Update available since " + DateTime.Now;
@@ -121,19 +128,19 @@ namespace SpeckleClientUI
 
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(string info)
+        private void NotifyPropertyChanged( string info )
         {
-            if (PropertyChanged != null)
+            if ( PropertyChanged != null )
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(info));
+                PropertyChanged( this, new PropertyChangedEventArgs( info ) );
             }
         }
-    
+
     }
 
     //only used for the DesignData xaml
     public class Receivers : List<Object>
     {
-        public Receivers() { }
+        public Receivers( ) { }
     }
 }
