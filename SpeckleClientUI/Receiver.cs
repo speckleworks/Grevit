@@ -19,7 +19,7 @@ namespace SpeckleClientUI
         private string _streamName;
         private string _message;
         private bool _transmitting;
-        private bool _expired;
+        private bool _expired = true;
         private SpeckleApiClient _client;
 
         internal string AuthToken { get => _authToken; set { _authToken = value; NotifyPropertyChanged( "AuthToken" ); } }
@@ -131,6 +131,7 @@ namespace SpeckleClientUI
             var copy = Stream.Objects;
 
             Transmitting = false;
+            Expired = false;
         }
 
         public virtual void UpdateMeta( )
