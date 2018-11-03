@@ -5,10 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.UI;
 using SpeckleClientUI;
+using SpeckleCore;
 
 namespace Grevit.Revit
-{
-    public class ExtEventHandler : IExternalEventHandler
+{ 
+    /// <summary>
+    /// This one here works the magic
+    /// </summary>
+    public class SpeckleExternalEventHandler : IExternalEventHandler
     {
         public Receiver Receiver;
 
@@ -18,47 +22,58 @@ namespace Grevit.Revit
         /// <param name="app"></param>
         public void Execute( UIApplication app )
         {
-            var pizza = SpeckleCore.Converter.Deserialise(Receiver.Stream.Objects);
+            if(Receiver.PreviousStream == null )
+            {
+                var x = "Should not happen";
+            }
 
-            var grevit = new GrevitBuildModel( app.ActiveUIDocument.Document );
+            var  deleted = Receiver.PreviousStream.Objects.Except( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
+            var added = Receiver.Stream.Objects.Except( Receiver.PreviousStream.Objects, new SpeckleObjectComparer() ).ToList();
+            var unchanged = Receiver.PreviousStream.Objects.Intersect( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
+
+          
+            //var pizza = SpeckleCore.Converter.Deserialise(Receiver.Stream.Objects);
 
             var units = (( string ) Receiver.Stream.BaseProperties.units).ToLower();
 
+            //return;
+
             // TODO: Check
+            double scale = 1;
 
             switch (units) {
                 case "kilometers":
-                    GrevitBuildModel.Scale = 3.2808399 * 1000;
+                    scale = 3.2808399 * 1000;
                     break;
                 case "meters":
-                    GrevitBuildModel.Scale = 3.2808399;
+                    scale = 3.2808399;
                     break;
                 case "centimeters":
-                    GrevitBuildModel.Scale = 0.032808399;
+                    scale = 0.032808399;
                     break;
                 case "millimiters":
-                    GrevitBuildModel.Scale = 0.0032808399;
+                    scale = 0.0032808399;
                     break;
                 case "miles":
-                    GrevitBuildModel.Scale = 5280;
+                    scale = 5280;
                     break;
                 case "feet":
-                    GrevitBuildModel.Scale = 1;
+                    scale = 1;
                     break;
                 case "inches":
-                    GrevitBuildModel.Scale = 0.0833333;
+                    scale = 0.0833333;
                     break;
 
             };
 
-            grevit.BuildModel( new Grevit.Types.ComponentCollection()
-            {
-                Items = pizza.Where( xx => xx is Grevit.Types.Component ).Select( xxx => xxx as Grevit.Types.Component ).ToList()
-            });
+            var myGrevit = new GrevitBuildModel( app.ActiveUIDocument.Document );
 
+            myGrevit.SpeckleBake( added, deleted, unchanged, scale );
 
-
-            var x = "Hello World";
+            //grevit.BuildModel( new Grevit.Types.ComponentCollection()
+            //{
+            //    Items = pizza.Where( xx => xx is Grevit.Types.Component ).Select( xxx => xxx as Grevit.Types.Component ).ToList()
+            //});
         }
 
         public string GetName( )

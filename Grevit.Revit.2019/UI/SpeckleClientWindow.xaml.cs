@@ -24,11 +24,11 @@ namespace Grevit.Revit
     {
         public GrevitBuildModel grevit;
         public ExternalEvent ExtEvent;
-        public ExtEventHandler ExtHandler;
+        public SpeckleExternalEventHandler ExtHandler;
         public UIApplication UIApplication;
 
 
-        public SpeckleClientWindow( UIApplication app, ExternalEvent e, ExtEventHandler h)
+        public SpeckleClientWindow( UIApplication app, ExternalEvent e, SpeckleExternalEventHandler h)
         {
             InitializeComponent();
 

@@ -48,7 +48,15 @@ namespace SpeckleClientUI
         }
         public bool Expired { get => _expired; set { _expired = value; NotifyPropertyChanged( "Expired" ); } }
 
+        /// <summary>
+        /// Keeps track of the current stream
+        /// </summary>
         public SpeckleStream Stream;
+
+        /// <summary>
+        /// Keeps track of the previous version of the stream.
+        /// </summary>
+        public SpeckleStream PreviousStream;
 
         public Receiver( string streamid, string server, string restapi, string authtoken, string email )
         {
@@ -65,6 +73,8 @@ namespace SpeckleClientUI
             _client.OnReady += ( sender, e ) =>
             {
                 UpdateMeta();
+                Stream = _client.Stream;
+                PreviousStream = SpeckleStream.FromJson( Stream.ToJson() );
             };
 
             _client.OnWsMessage += OnWsMessage;
@@ -72,20 +82,20 @@ namespace SpeckleClientUI
             _client.OnError += ( sender, e ) =>
             {
                 Console.Write( e );
-                //if (e.EventName == "websocket-disconnected")
-                //    return;
-                //Warning(e.EventName + ": " + e.EventData);
             };
 
 
-            _client.IntializeReceiver( StreamId, "", "Dynamo", "", AuthToken );
+            _client.IntializeReceiver( StreamId, "", "Revit", "", AuthToken );
         }
 
-        //  TODO
         public virtual void UpdateGlobal( )
         {
             Transmitting = true;
+            // clone the previous state
+            PreviousStream = SpeckleStream.FromJson(Stream.ToJson());
+            // get the new state
             Stream = _client.StreamGetAsync( _client.StreamId, null ).Result.Resource;
+            // update matteo's local binding vars, etc.
             StreamName = Stream.Name;
 
             Message = "Getting objects";
@@ -142,7 +152,6 @@ namespace SpeckleClientUI
             StreamName = result.Resource.Name;
             Transmitting = false;
             CommandManager.InvalidateRequerySuggested();
-
         }
 
         public virtual void OnWsMessage( object source, SpeckleEventArgs e )

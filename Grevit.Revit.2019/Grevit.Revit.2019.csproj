@@ -112,7 +112,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SpeckleClientWindow.xaml.cs">
+    <Compile Include="UI\SpeckleClientWindow.xaml.cs">
       <DependentUpon>SpeckleClientWindow.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -157,11 +157,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="SpeckleClientWindow.xaml">
+    <Page Include="UI\SpeckleClientWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <!--         

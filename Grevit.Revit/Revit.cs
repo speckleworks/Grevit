@@ -167,8 +167,8 @@ namespace Grevit.Revit
                 var uiApp = commandData.Application;
                 grevit = new GrevitBuildModel( commandData.Application.ActiveUIDocument.Document );
 
-                var hand = new ExtEventHandler();
-                var eve = ExternalEvent.Create(hand);
+                var hand = new SpeckleExternalEventHandler();
+                var eve = ExternalEvent.Create( hand );
 
                 speckleClient = new SpeckleClientWindow( uiApp, eve, hand );
                 speckleClient.Show();
@@ -187,7 +187,6 @@ namespace Grevit.Revit
     /// <summary>
     /// The actual Revit Grevit Command
     /// </summary>
-
     public class GrevitBuildModel
     {
         public GrevitBuildModel( Autodesk.Revit.DB.Document doc )
@@ -240,7 +239,7 @@ namespace Grevit.Revit
         /// </summary>
         public static string RevitTemplateFolder = String.Format( @"C:\ProgramData\Autodesk\RAC {0}\Family Templates\English", Version );
 
-        public Result BuildModel( Grevit.Types.ComponentCollection components )
+        public Result BuildModel( ComponentCollection components )
         {
             bool delete = false;
 
@@ -292,7 +291,8 @@ namespace Grevit.Revit
                     {
                         component.Build( false );
                     }
-                    catch ( Exception e ) {
+                    catch ( Exception e )
+                    {
                         //Grevit.Reporting.MessageBox.Show( component.GetType().Name + " Error", e.InnerException.Message );
                     }
                 }
@@ -310,7 +310,8 @@ namespace Grevit.Revit
                 {
                     component.Build( true );
                 }
-                catch ( Exception e ) {
+                catch ( Exception e )
+                {
                     //Grevit.Reporting.MessageBox.Show( component.GetType().Name + " Error", e.InnerException.Message );
                 }
             }
@@ -400,7 +401,97 @@ namespace Grevit.Revit
             return Result.Succeeded;
         }
 
+        /// <summary>
+        /// A copy paste of the BuildModel above with removed forms, etc.
+        /// </summary>
+        /// <param name="components"></param>
+        /// <returns></returns>
+        public Result SpeckleBake( IEnumerable<SpeckleObject> added, IEnumerable<SpeckleObject> deleted, IEnumerable<SpeckleObject> unchanged, double scale )
+        {
+            GrevitBuildModel.Scale = scale;
 
+            // nasty side-dependencies in code, do not touch!
+            existing_Elements = document.GetExistingGrevitElements( true );
+            created_Elements = new Dictionary<string, ElementId>();
+
+            var deleteTransaction = new Transaction( document, "SpeckleGrevitDelete" );
+            deleteTransaction.Start();
+
+            var ToDeleteComponents = SpeckleCore.Converter.Deserialise( deleted );
+
+            //  TODO
+            foreach( var obj in deleted)
+            {
+               
+            }
+
+
+            deleteTransaction.Commit();
+            deleteTransaction.Dispose();
+
+            var createTransaction = new Transaction( GrevitBuildModel.document, "SpeckleGrevitAdd" );
+            createTransaction.Start();
+
+            var ToAddComponents = SpeckleCore.Converter.Deserialise( added ).Select( obj => obj as Component );
+            var componentsWithReferences = new List<Component>();
+      
+            foreach ( Component component in ToAddComponents )
+            {
+                // If they are not reference dependent, create them directly
+                // Otherwise add the component to a List of stalled elements
+                if ( !component.stalledForReference )
+                {
+                    try
+                    {
+                        component.Build( false );
+                    }
+                    catch ( Exception e )
+                    {
+                        Debug.WriteLine( "Failed to build object" );
+                    }
+                }
+                else
+                    componentsWithReferences.Add( component );
+            }
+           
+            foreach ( Component component in componentsWithReferences )
+            {
+                try
+                {
+                    component.Build( true );
+                }
+                catch ( Exception e )
+                {
+                    Debug.WriteLine( "Failed to build referebce object" );
+                }
+            }
+
+            createTransaction.Commit();
+            createTransaction.Dispose();
+
+            // If Delete Setting is activated
+            if ( false )
+            {
+                // Create a new transaction
+                Transaction transaction = new Transaction( document, "GrevitDelete" );
+                transaction.Start();
+
+                // get the Difference between existing and new elements to erase them
+                IEnumerable<KeyValuePair<string, ElementId>> unused =
+                    existing_Elements.Except( created_Elements ).Concat( created_Elements.Except( existing_Elements ) );
+
+                // Delete those elements from the document
+                foreach ( KeyValuePair<string, ElementId> element in unused ) document.Delete( element.Value );
+
+                // commit and dispose the transaction
+                transaction.Commit();
+                transaction.Dispose();
+            }
+
+
+
+            return Result.Succeeded;
+        }
     }
 
 
