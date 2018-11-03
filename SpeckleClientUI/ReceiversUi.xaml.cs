@@ -17,7 +17,7 @@ namespace SpeckleClientUI
     {
         private ObservableCollection<Receiver> _receivers = new ObservableCollection<Receiver>();
         private ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
-        public delegate void ReceivedData(List<SpeckleObject> objs);
+        public delegate void ReceivedData(Receiver receiver);
         public event ReceivedData OnUpdateGlobal;
 
         public ReceiversUi()
@@ -36,12 +36,16 @@ namespace SpeckleClientUI
 
         private void NewReceiverClick(object sender, RoutedEventArgs e)
         {
-
             if (StreamsComboBox.SelectedIndex == -1 || AccountsComboBox.SelectedIndex==-1)
                 return;
 
             var stream = StreamsComboBox.SelectedItem as SpeckleStream;
             var account = _accounts[AccountsComboBox.SelectedIndex];
+
+            // check if the stream is already there
+            if ( _receivers.Where( rec => rec.StreamId == stream.StreamId && rec.RestApi == account.RestApi ).Count() > 0 )
+                // TODO: fail in a nicer way than silently crapping out
+                return;
 
             _receivers.Add(new Receiver(stream.StreamId, account.ServerName, account.RestApi, account.Token, account.Email));
         }
@@ -52,8 +56,8 @@ namespace SpeckleClientUI
         {
             var r = e.Parameter as Receiver;
 
-            var objs = r.UpdateGlobal();
-            OnUpdateGlobal(objs);
+            r.UpdateGlobal();
+            OnUpdateGlobal(r);
         }
 
 
@@ -111,17 +115,6 @@ namespace SpeckleClientUI
             }
 
             client.Dispose();
-            //client.StreamsGetAllAsync().ContinueWith(tsk =>
-            //{
-            //    Application.Current.Dispatcher.BeginInvoke(
-            //      DispatcherPriority.Background,
-            //      new Action(() =>
-            //      {
-            //          StreamsComboBox.ItemsSource = tsk.Result.Resources.ToList();
-            //      }));
-
-            //});
-
         }
     }
 

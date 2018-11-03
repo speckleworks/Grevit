@@ -227,7 +227,7 @@ namespace Grevit.Revit
             else if (component.GetType() == typeof(Grevit.Types.PLine))
             {
                 Grevit.Types.PLine pline = (Grevit.Types.PLine)component;
-
+                
                 for (int i = 0; i < pline.points.Count - 1; i++)
                 {
                     curvesOut.Add(Autodesk.Revit.DB.Line.CreateBound(pline.points[i].ToXYZ(coords), pline.points[i + 1].ToXYZ(coords)));

@@ -12,6 +12,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Autodesk.Revit.UI;
+using Grevit.Types;
 
 namespace Grevit.Revit
 {
@@ -20,9 +22,30 @@ namespace Grevit.Revit
     /// </summary>
     public partial class SpeckleClientWindow : Window
     {
-        public SpeckleClientWindow( )
+        public GrevitBuildModel grevit;
+        public ExternalEvent ExtEvent;
+        public ExtEventHandler ExtHandler;
+        public UIApplication UIApplication;
+
+
+        public SpeckleClientWindow( UIApplication app, ExternalEvent e, ExtEventHandler h)
         {
             InitializeComponent();
+
+            UIApplication = app;
+            ExtEvent = e;
+            ExtHandler = h;
+
+            //grevit = _grevit;
+            this.receiver.OnUpdateGlobal += Receiver_OnUpdateGlobal;
+        }
+
+        private void Receiver_OnUpdateGlobal( SpeckleClientUI.Receiver receiver )
+        { 
+            ExtHandler.Receiver = receiver;
+            ExtEvent.Raise();
+
+            //grevit.BuildModel( myCollection );
         }
 
         private void OnClosing( object sender, CancelEventArgs e )
