@@ -74,7 +74,6 @@ namespace SpeckleClientUI
             {
                 UpdateMeta();
                 Stream = _client.Stream;
-                PreviousStream = SpeckleStream.FromJson( Stream.ToJson() );
             };
 
             _client.OnWsMessage += OnWsMessage;
@@ -84,6 +83,7 @@ namespace SpeckleClientUI
                 Console.Write( e );
             };
 
+            PreviousStream = new SpeckleStream() { Objects = new List<SpeckleObject>() };
 
             _client.IntializeReceiver( StreamId, "", "Revit", "", AuthToken );
         }
@@ -137,8 +137,6 @@ namespace SpeckleClientUI
                 // add objects to cache
                 LocalContext.AddObject( obj, _client.BaseUrl );
             }
-
-            var copy = Stream.Objects;
 
             Transmitting = false;
         }

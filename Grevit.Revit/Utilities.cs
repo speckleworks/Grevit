@@ -773,11 +773,12 @@ namespace Grevit.Revit
 
             List<Type> types = new List<Type>();
             types.Add(typeof(Autodesk.Revit.DB.Wall));
+            types.Add( typeof( Autodesk.Revit.DB.Floor ) );
             types.Add(typeof(Autodesk.Revit.DB.FamilyInstance));
             types.Add(typeof(Autodesk.Revit.DB.RoofBase));
 
             List<Element> myfilter = document.GetElementsFromClasses(types);
-
+            //document.GetElement()
             List<string> banned = new List<string>();
 
             foreach (Element em in myfilter)

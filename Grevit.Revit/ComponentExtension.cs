@@ -68,8 +68,6 @@ namespace Grevit.Revit
                 // As it is an extension method, the first parameter is the component itself
                 parameters[0] = component;
 
-
-
                 #region usingReferenceElement
 
                 // if we should use a reference element to invoke the Create method
@@ -97,8 +95,6 @@ namespace Grevit.Revit
                 }
 
                 #endregion
-
-
 
                 // If the create method exists
                 if (method != null && method.Name.EndsWith("Create"))

@@ -22,7 +22,6 @@ namespace Grevit.Revit
     /// </summary>
     public partial class SpeckleClientWindow : Window
     {
-        public GrevitBuildModel grevit;
         public ExternalEvent ExtEvent;
         public SpeckleExternalEventHandler ExtHandler;
         public UIApplication UIApplication;
