@@ -25,13 +25,13 @@ namespace SpeckleClientUI.Test
         public MainWindow()
         {
             InitializeComponent();
-            receiver.OnUpdateGlobal += this.Receiver_OnUpdateGlobal;
+            receiver.OnUpdateGlobal += Receiver_OnUpdateGlobal;
         }
 
-        private void Receiver_OnUpdateGlobal(List<SpeckleObject> objs)
+        private void Receiver_OnUpdateGlobal(Receiver receiver)
         {
-            Console.WriteLine(objs.ToString());
-            throw new NotImplementedException();
+            Console.WriteLine(receiver.StreamId);
         }
+
     }
 }

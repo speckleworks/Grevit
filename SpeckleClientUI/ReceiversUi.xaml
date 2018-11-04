@@ -177,7 +177,7 @@
                     <Style BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}" TargetType="materialDesign:PackIcon">
                       <Setter Property="Kind" Value="Download" />
                       <Style.Triggers>
-                        <DataTrigger Binding="{Binding Transmitting}" Value="False">
+                        <DataTrigger Binding="{Binding Expired}" Value="False">
                           <Setter Property="Kind" Value="Check" />
                           <DataTrigger.EnterActions>
                             <BeginStoryboard>
@@ -192,7 +192,7 @@
                           </DataTrigger.EnterActions>
                         </DataTrigger>
 
-                        <DataTrigger Binding="{Binding Expired}" Value="True">
+                        <!--<DataTrigger Binding="{Binding Expired}" Value="True">
                           <Setter Property="Kind" Value="Check" />
                           <DataTrigger.EnterActions>
                             <BeginStoryboard>
@@ -205,7 +205,7 @@
                               </Storyboard>
                             </BeginStoryboard>
                           </DataTrigger.EnterActions>
-                        </DataTrigger>
+                        </DataTrigger>-->
                       </Style.Triggers>
                     </Style>
                   </materialDesign:PackIcon.Style>

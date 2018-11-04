@@ -17,11 +17,13 @@
     Server="Speckle Hestia"
     StreamId="45ds34"
     StreamName="Sample stream"
-    Transmitting="False" />
+    Transmitting="False" 
+    Expired="True"/>
   <spk:Receiver
     Email="test@tst.com"
     Server="Speckle Hestia"
     StreamId="sdfsdg"
     StreamName="Hello Dimitrie!"
-    Transmitting="False" />
+    Transmitting="False" 
+    Expired="True"/>
 </spk:Receivers>
