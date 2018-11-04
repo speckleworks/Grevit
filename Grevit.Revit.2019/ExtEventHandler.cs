@@ -8,77 +8,81 @@ using SpeckleClientUI;
 using SpeckleCore;
 
 namespace Grevit.Revit
-{ 
+{
+  /// <summary>
+  /// This one here works the magic
+  /// </summary>
+  public class SpeckleExternalEventHandler : IExternalEventHandler
+  {
+    public Receiver Receiver;
+    public ISpeckleRevitBuilder Builder;
+
     /// <summary>
-    /// This one here works the magic
+    /// Where the speckle build and bake happens
     /// </summary>
-    public class SpeckleExternalEventHandler : IExternalEventHandler
+    /// <param name="app"></param>
+    public void Execute( UIApplication app )
     {
-        public Receiver Receiver;
+      if ( Receiver.PreviousStream == null )
+      {
+        var x = "Should not happen";
+      }
 
-        /// <summary>
-        /// Where the speckle build and bake happens
-        /// </summary>
-        /// <param name="app"></param>
-        public void Execute( UIApplication app )
-        {
-            if(Receiver.PreviousStream == null )
-            {
-                var x = "Should not happen";
-            }
+      var deleted = Receiver.PreviousStream.Objects.Except( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
+      var added = Receiver.Stream.Objects.Except( Receiver.PreviousStream.Objects, new SpeckleObjectComparer() ).ToList();
+      var unchanged = Receiver.PreviousStream.Objects.Intersect( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
 
-            var  deleted = Receiver.PreviousStream.Objects.Except( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
-            var added = Receiver.Stream.Objects.Except( Receiver.PreviousStream.Objects, new SpeckleObjectComparer() ).ToList();
-            var unchanged = Receiver.PreviousStream.Objects.Intersect( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
 
-          
-            //var pizza = SpeckleCore.Converter.Deserialise(Receiver.Stream.Objects);
+      //var pizza = SpeckleCore.Converter.Deserialise(Receiver.Stream.Objects);
 
-            var units = (( string ) Receiver.Stream.BaseProperties.units).ToLower();
+      var units = ( ( string ) Receiver.Stream.BaseProperties.units ).ToLower();
 
-            //return;
+      //return;
 
-            // TODO: Check
-            double scale = 1;
+      // TODO: Check
+      double scale = 1;
 
-            switch (units) {
-                case "kilometers":
-                    scale = 3.2808399 * 1000;
-                    break;
-                case "meters":
-                    scale = 3.2808399;
-                    break;
-                case "centimeters":
-                    scale = 0.032808399;
-                    break;
-                case "millimiters":
-                    scale = 0.0032808399;
-                    break;
-                case "miles":
-                    scale = 5280;
-                    break;
-                case "feet":
-                    scale = 1;
-                    break;
-                case "inches":
-                    scale = 0.0833333;
-                    break;
+      switch ( units )
+      {
+        case "kilometers":
+          scale = 3.2808399 * 1000;
+          break;
+        case "meters":
+          scale = 3.2808399;
+          break;
+        case "centimeters":
+          scale = 0.032808399;
+          break;
+        case "millimiters":
+          scale = 0.0032808399;
+          break;
+        case "miles":
+          scale = 5280;
+          break;
+        case "feet":
+          scale = 1;
+          break;
+        case "inches":
+          scale = 0.0833333;
+          break;
 
-            };
+      };
 
-            var myGrevit = new GrevitBuildModel( app.ActiveUIDocument.Document );
+      var myGrevit = new GrevitBuildModel( app.ActiveUIDocument.Document );
 
-            myGrevit.SpeckleBake( added, deleted, unchanged, scale );
+      myGrevit.SpeckleBake( added, deleted, unchanged, scale );
 
-            //grevit.BuildModel( new Grevit.Types.ComponentCollection()
-            //{
-            //    Items = pizza.Where( xx => xx is Grevit.Types.Component ).Select( xxx => xxx as Grevit.Types.Component ).ToList()
-            //});
-        }
+      Builder.Build( null, scale );
 
-        public string GetName( )
-        {
-            return "Speckle Bake";
-        }
+      //grevit.BuildModel( new Grevit.Types.ComponentCollection()
+      //{
+      //    Items = pizza.Where( xx => xx is Grevit.Types.Component ).Select( xxx => xxx as Grevit.Types.Component ).ToList()
+      //});
     }
+
+    public string GetName( )
+    {
+      return "Speckle Bake";
+    }
+  }
 }

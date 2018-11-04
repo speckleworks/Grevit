@@ -47,7 +47,7 @@ namespace Grevit.Revit
         /// Invoke the Components Create Method
         /// </summary>
         /// <param name="component"></param>
-        public static void Build(this Grevit.Types.Component component, bool useReferenceElement)
+        public static void Build(this Grevit.Types.Component component, bool useReferenceElement, SpeckleGrevitBuilder builder = null)
         {
             // Create a new transaction
             //Transaction transaction = new Transaction(GrevitBuildModel.document, "GrevitCreate");

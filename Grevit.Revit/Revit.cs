@@ -115,9 +115,6 @@ namespace Grevit.Revit
 
     }
 
-    
-
-
     [Transaction( TransactionMode.Manual )]
     public class SpeckleClient : IExternalCommand
     {
