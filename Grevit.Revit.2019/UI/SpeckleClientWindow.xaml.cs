@@ -14,43 +14,44 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Autodesk.Revit.UI;
 using Grevit.Types;
+using SpeckleClientUI;
 
 namespace Grevit.Revit
 {
-    /// <summary>
-    /// Interaction logic for SpeckleClientWindow.xaml
-    /// </summary>
-    public partial class SpeckleClientWindow : Window
+  /// <summary>
+  /// Interaction logic for SpeckleClientWindow.xaml
+  /// </summary>
+  public partial class SpeckleClientWindow : Window
+  {
+    public ExternalEvent ExtEvent;
+    public SpeckleExternalEventHandler ExtHandler;
+    public UIApplication UIApplication;
+    public ISpeckleHostBuilderGenerator Generator;
+
+
+    public SpeckleClientWindow( UIApplication app, ExternalEvent e, SpeckleExternalEventHandler h, ISpeckleHostBuilderGenerator gen )
     {
-        public ExternalEvent ExtEvent;
-        public SpeckleExternalEventHandler ExtHandler;
-        public UIApplication UIApplication;
+      InitializeComponent();
 
+      UIApplication = app;
+      ExtEvent = e;
+      ExtHandler = h;
+      Generator = gen;
 
-        public SpeckleClientWindow( UIApplication app, ExternalEvent e, SpeckleExternalEventHandler h)
-        {
-            InitializeComponent();
-
-            UIApplication = app;
-            ExtEvent = e;
-            ExtHandler = h;
-
-            //grevit = _grevit;
-            this.receiver.OnUpdateGlobal += Receiver_OnUpdateGlobal;
-        }
-
-        private void Receiver_OnUpdateGlobal( SpeckleClientUI.Receiver receiver )
-        { 
-            ExtHandler.Receiver = receiver;
-            ExtEvent.Raise();
-
-            //grevit.BuildModel( myCollection );
-        }
-
-        private void OnClosing( object sender, CancelEventArgs e )
-        {
-            this.Hide();
-            e.Cancel = true;
-        }
+      this.receiver.OnUpdateGlobal += Receiver_OnUpdateGlobal;
+      this.receiver.BuildGenerator = gen;
     }
+
+    private void Receiver_OnUpdateGlobal( SpeckleClientUI.Receiver receiver )
+    {
+      ExtHandler.Receiver = receiver;
+      ExtEvent.Raise();
+    }
+
+    private void OnClosing( object sender, CancelEventArgs e )
+    {
+      this.Hide();
+      e.Cancel = true;
+    }
+  }
 }

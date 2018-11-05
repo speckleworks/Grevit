@@ -27,96 +27,95 @@ using Autodesk.Revit.DB;
 
 namespace Grevit.Revit
 {
+  /// <summary>
+  /// Extends Grevit Components by Parameter Methods
+  /// </summary>
+  public static class ParameterExtension
+  {
     /// <summary>
-    /// Extends Grevit Components by Parameter Methods
+    /// Sets Parameter Values
     /// </summary>
-    public static class ParameterExtension
+    /// <param name="component"></param>
+    /// <param name="element">The Element to apply parameters to</param>
+    public static void SetParameters( this Grevit.Types.Component component, Element element, SpeckleGrevitBuilder host = null )
     {
-        /// <summary>
-        /// Sets Parameter Values
-        /// </summary>
-        /// <param name="component"></param>
-        /// <param name="element">The Element to apply parameters to</param>
-        public static void SetParameters(this Grevit.Types.Component component, Element element)
+      var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+
+      if ( element != null )
+      {
+        if ( component.parameters != null )
         {
-            if (element != null)
+          foreach ( Grevit.Types.Parameter componentParameter in component.parameters )
+          {
+            int iid;
+            Autodesk.Revit.DB.Parameter elementParameter = null;
+
+            if ( int.TryParse( componentParameter.name, out iid ) )
             {
-                if (component.parameters != null)
-                {
-                    foreach (Grevit.Types.Parameter componentParameter in component.parameters)
-                    {
-                        int iid;
-                        Autodesk.Revit.DB.Parameter elementParameter = null;
-
-                        if (int.TryParse(componentParameter.name, out iid))
-                        {
-                            foreach (Autodesk.Revit.DB.Parameter p in element.Parameters) if (p.Id.IntegerValue == iid) elementParameter = p;
-                        }
-                        else elementParameter = element.LookupParameter(componentParameter.name);
-
-                        if (elementParameter != null)
-                        {
-                            switch (elementParameter.StorageType)
-                            {
-                                case StorageType.Double:
-                                    if (componentParameter.value.GetType() == typeof(double)) elementParameter.Set((double)componentParameter.value);
-                                    break;
-
-                                case StorageType.Integer:
-                                    if (componentParameter.value.GetType() == typeof(int)) elementParameter.Set((int)componentParameter.value);
-                                    break;
-
-                                case StorageType.String:
-                                    if (componentParameter.value.GetType() == typeof(string)) elementParameter.Set((string)componentParameter.value);
-                                    break;
-                                case StorageType.ElementId:
-                                    if (componentParameter.value.GetType() == typeof(Grevit.Types.ElementID))
-                                    {
-                                        Grevit.Types.ElementID grvid = (Grevit.Types.ElementID)componentParameter.value;
-                                        ElementId id = new ElementId(grvid.ID);
-                                        if (GrevitBuildModel.document.GetElement(id) != null) elementParameter.Set(id);
-                                    }
-                                    else if (componentParameter.value.GetType() == typeof(Grevit.Types.SearchElementID))
-                                    {
-                                        Grevit.Types.SearchElementID grvid = (Grevit.Types.SearchElementID)componentParameter.value;
-                                        Element e = GrevitBuildModel.document.GetElementByName(grvid.Name);
-                                        if (e != null) elementParameter.Set(e.Id);
-                                    }
-
-                                    break;
-
-
-                            }
-
-                        }
-                    }
-                }
-
-
-                Autodesk.Revit.DB.Parameter grevitIdParameter = element.LookupParameter("GID");
-                
-                if (grevitIdParameter == null)
-                {
-                    GrevitBuildModel.document.GrevitAddSharedParameter();
-                    grevitIdParameter = element.LookupParameter("GID");
-                }
-                
-                if (grevitIdParameter != null && !grevitIdParameter.IsReadOnly) grevitIdParameter.Set(component.GID);
-                
+              foreach ( Autodesk.Revit.DB.Parameter p in element.Parameters ) if ( p.Id.IntegerValue == iid ) elementParameter = p;
             }
+            else elementParameter = element.LookupParameter( componentParameter.name );
+
+            if ( elementParameter != null )
+            {
+              switch ( elementParameter.StorageType )
+              {
+                case StorageType.Double:
+                  if ( componentParameter.value.GetType() == typeof( double ) ) elementParameter.Set( ( double ) componentParameter.value );
+                  break;
+
+                case StorageType.Integer:
+                  if ( componentParameter.value.GetType() == typeof( int ) ) elementParameter.Set( ( int ) componentParameter.value );
+                  break;
+
+                case StorageType.String:
+                  if ( componentParameter.value.GetType() == typeof( string ) ) elementParameter.Set( ( string ) componentParameter.value );
+                  break;
+                case StorageType.ElementId:
+                  if ( componentParameter.value.GetType() == typeof( Grevit.Types.ElementID ) )
+                  {
+                    Grevit.Types.ElementID grvid = ( Grevit.Types.ElementID ) componentParameter.value;
+                    ElementId id = new ElementId( grvid.ID );
+                    if ( revitDoc.GetElement( id ) != null ) elementParameter.Set( id );
+                  }
+                  else if ( componentParameter.value.GetType() == typeof( Grevit.Types.SearchElementID ) )
+                  {
+                    Grevit.Types.SearchElementID grvid = ( Grevit.Types.SearchElementID ) componentParameter.value;
+                    Element e = revitDoc.GetElementByName( grvid.Name );
+                    if ( e != null ) elementParameter.Set( e.Id );
+                  }
+
+                  break;
+              }
+
+            }
+          }
         }
 
-        /// <summary>
-        /// Store GID in create elements List
-        /// </summary>
-        /// <param name="component"></param>
-        /// <param name="elementId">ElementId of created element</param>
-        public static void StoreGID(this Grevit.Types.Component component, Autodesk.Revit.DB.ElementId elementId)
+        Autodesk.Revit.DB.Parameter grevitIdParameter = element.LookupParameter( "GID" );
+
+        if ( grevitIdParameter == null )
         {
-            if (elementId != null
-                && component.GID != null
-                && !GrevitBuildModel.created_Elements.ContainsKey(component.GID))
-                    GrevitBuildModel.created_Elements.Add(component.GID, elementId);
+          revitDoc.GrevitAddSharedParameter();
+          grevitIdParameter = element.LookupParameter( "GID" );
         }
+
+        if ( grevitIdParameter != null && !grevitIdParameter.IsReadOnly ) grevitIdParameter.Set( component.GID );
+      }
     }
+
+    /// <summary>
+    /// Store GID in create elements List
+    /// </summary>
+    /// <param name="component"></param>
+    /// <param name="elementId">ElementId of created element</param>
+    public static void StoreGID( this Grevit.Types.Component component, Autodesk.Revit.DB.ElementId elementId, SpeckleGrevitBuilder host = null )
+    {
+      var myCreatedElements = host == null ? GrevitBuildModel.CreatedElements : host.CreatedElements;
+      if ( elementId != null
+          && component.GID != null
+          && !myCreatedElements.ContainsKey( component.GID ) )
+        myCreatedElements.Add( component.GID, elementId );
+    }
+  }
 }

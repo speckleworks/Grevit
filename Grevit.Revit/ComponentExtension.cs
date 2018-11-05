@@ -41,81 +41,89 @@ using Grevit.Revit;
 
 namespace Grevit.Revit
 {
-    public static class ComponentExtension
+  public static class ComponentExtension
+  {
+    /// <summary>
+    /// Invoke the Components Create Method
+    /// </summary>
+    /// <param name="component"></param>
+    public static void Build( this Grevit.Types.Component component, bool useReferenceElement, SpeckleGrevitBuilder builder = null )
     {
-        /// <summary>
-        /// Invoke the Components Create Method
-        /// </summary>
-        /// <param name="component"></param>
-        public static void Build(this Grevit.Types.Component component, bool useReferenceElement, SpeckleGrevitBuilder builder = null)
+
+      var MyCreatedElements = builder == null ? GrevitBuildModel.CreatedElements : builder.CreatedElements;
+
+      var MyRevitDoc = builder == null ? GrevitBuildModel.document : builder.RevitDoc;
+
+      // Get the components type
+      Type type = component.GetType();
+
+      // Get the Create extension Method using reflection
+      IEnumerable<System.Reflection.MethodInfo> methods = Grevit.Reflection.Utilities.GetExtensionMethods( System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.Assembly, type );
+
+      // Check all extensions methods (should only be Create() anyway)
+      foreach ( System.Reflection.MethodInfo method in methods )
+      {
+        // get the methods parameters
+        var parameters = new List<Object>();
+
+        // As it is an extension method, the first parameter is the component itself
+        parameters.Add( component );
+
+        // if we should use a reference element to invoke the Create method
+        // and parameter length equals 2
+        // get the components referenceGID, see if it has been created already
+        // use this element as a parameter to invoke Create(Element element)
+        if ( useReferenceElement && method.GetParameters().Length == 2 )
         {
-            // Create a new transaction
-            //Transaction transaction = new Transaction(GrevitBuildModel.document, "GrevitCreate");
-            //transaction.Start();
+          // Get the components reference GID
+          System.Reflection.PropertyInfo propertyReferenceGID = type.GetProperty( "referenceGID" );
 
-            // Get the components type
-            Type type = component.GetType();
+          // Return if there is no reference GID property
+          if ( propertyReferenceGID == null ) return;
 
-            // Get the Create extension Method using reflection
-            IEnumerable<System.Reflection.MethodInfo> methods = Grevit.Reflection.Utilities.GetExtensionMethods(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.Assembly, type);
+          // Get the referene GID string value                    
+          string referenceGID = ( string ) propertyReferenceGID.GetValue( component );
 
-            // Check all extensions methods (should only be Create() anyway)
-            foreach (System.Reflection.MethodInfo method in methods)
-            {
-                // get the methods parameters
-                object[] parameters = new object[method.GetParameters().Length];
-
-                // As it is an extension method, the first parameter is the component itself
-                parameters[0] = component;
-
-                #region usingReferenceElement
-
-                // if we should use a reference element to invoke the Create method
-                // and parameter length equals 2
-                // get the components referenceGID, see if it has been created already
-                // use this element as a parameter to invoke Create(Element element)
-                if (useReferenceElement && parameters.Length == 2)
-                { 
-                    // Get the components reference GID
-                    System.Reflection.PropertyInfo propertyReferenceGID = type.GetProperty("referenceGID");
-
-                    // Return if there is no reference GID property
-                    if (propertyReferenceGID == null) return;
-
-                    // Get the referene GID string value                    
-                    string referenceGID = (string)propertyReferenceGID.GetValue(component);
-                    
-                    // If the reference has been created already, get 
-                    // the Element from the document and apply it as parameter two
-                    if (GrevitBuildModel.created_Elements.ContainsKey(referenceGID))
-                    { 
-                        Element referenceElement = GrevitBuildModel.document.GetElement(GrevitBuildModel.created_Elements[referenceGID]);
-                        parameters[1] = referenceElement;
-                    }
-                }
-
-                #endregion
-
-                // If the create method exists
-                if (method != null && method.Name.EndsWith("Create"))
-                {
-                    // Invoke the Create Method without parameters
-                    Element createdElement = (Element)method.Invoke(component, parameters);
-
-                    // If the return value is valud set the parameters
-                    if (createdElement != null)
-                    {
-                        component.SetParameters(createdElement);
-                        component.StoreGID(createdElement.Id);
-                    }
-                }
-            }
-
-            // commit and dispose the transaction
-            //transaction.Commit();
-            //transaction.Dispose();
-
+          // If the reference has been created already, get 
+          // the Element from the document and apply it as parameter two
+          if ( MyCreatedElements.ContainsKey( referenceGID ) )
+          {
+            Element referenceElement = MyRevitDoc.GetElement( MyCreatedElements[ referenceGID ] );
+            parameters.Add( referenceElement );
+          }
         }
 
+        // encapsulate the extension methods within a logical context
+        // (their builder class)
+        parameters.Add( builder );
+
+        Element createdElement = null;
+
+        // If the create method exists
+        if ( method != null && method.Name.EndsWith( "Create" ) )
+        {
+          // Invoke the Create Method without parameters
+          if ( component is Grevit.Types.Wall )
+          {
+            createdElement = ( Element ) method.Invoke( component, new object[ ] { component, null, null, builder });
+          }
+          else
+             createdElement = ( Element ) method.Invoke( component, parameters.ToArray() );
+
+          // If the return value is valud set the parameters
+          if ( createdElement != null )
+          {
+            component.SetParameters( createdElement, builder );
+            component.StoreGID( createdElement.Id, builder );
+          }
+        }
+      }
+
+      // commit and dispose the transaction
+      //transaction.Commit();
+      //transaction.Dispose();
+
     }
+
+  }
 }

@@ -30,19 +30,22 @@ namespace Grevit.Revit
     /// <summary>
     /// Elements newly created by Grevit
     /// </summary>
-    public static Dictionary<string, ElementId> created_Elements;
+    public static Dictionary<string, ElementId> CreatedElements;
 
     /// <summary>
     /// Existing Grevit Elements 
     /// </summary>
-    public static Dictionary<string, ElementId> existing_Elements;
+    public static Dictionary<string, ElementId> ExistingElements;
 
     /// <summary>
     /// List for roof shape points to apply
     /// </summary>
     public static List<Tuple<ElementId, CurveArray>> RoofShapePoints;
 
-    public static double Scale = 1;
+    /// <summary>
+    /// Default scale meters to feet
+    /// </summary>
+    public static double Scale = 3.2808399;
 
     /// <summary>
     /// Version of the API being used
@@ -97,10 +100,10 @@ namespace Grevit.Revit
 
       // Get all existing Grevit Elements from the Document
       // If Update is false this will just be an empty List
-      existing_Elements = document.GetExistingGrevitElements( components.update );
+      ExistingElements = document.GetExistingGrevitElements( components.update );
 
       // Set up an empty List for created Elements
-      created_Elements = new Dictionary<string, ElementId>();
+      CreatedElements = new Dictionary<string, ElementId>();
 
 
       #region createComponents
@@ -214,7 +217,7 @@ namespace Grevit.Revit
 
         // get the Difference between existing and new elements to erase them
         IEnumerable<KeyValuePair<string, ElementId>> unused =
-            existing_Elements.Except( created_Elements ).Concat( created_Elements.Except( existing_Elements ) );
+            ExistingElements.Except( CreatedElements ).Concat( CreatedElements.Except( ExistingElements ) );
 
         // Delete those elements from the document
         foreach ( KeyValuePair<string, ElementId> element in unused ) document.Delete( element.Value );
@@ -239,8 +242,8 @@ namespace Grevit.Revit
       GrevitBuildModel.Scale = scale;
 
       // nasty side-dependencies in code, do not touch!
-      existing_Elements = document.GetExistingGrevitElements( true );
-      created_Elements = new Dictionary<string, ElementId>();
+      ExistingElements = document.GetExistingGrevitElements( true );
+      CreatedElements = new Dictionary<string, ElementId>();
 
       var deleteTransaction = new Transaction( document, "SpeckleGrevitDelete" );
       deleteTransaction.Start();
@@ -306,7 +309,7 @@ namespace Grevit.Revit
 
         // get the Difference between existing and new elements to erase them
         IEnumerable<KeyValuePair<string, ElementId>> unused =
-            existing_Elements.Except( created_Elements ).Concat( created_Elements.Except( existing_Elements ) );
+            ExistingElements.Except( CreatedElements ).Concat( CreatedElements.Except( ExistingElements ) );
 
         // Delete those elements from the document
         foreach ( KeyValuePair<string, ElementId> element in unused ) document.Delete( element.Value );

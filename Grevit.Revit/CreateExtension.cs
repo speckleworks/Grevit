@@ -198,6 +198,8 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myCreatedElements = host == null ? GrevitBuildModel.CreatedElements : host.CreatedElements;
+      var myExistingElements = host == null ? GrevitBuildModel.ExistingElements : host.ExistingElements;
 
       // Get the structural type 
       Autodesk.Revit.DB.Structure.StructuralType stype = familyInstance.structuralType.ToRevitStructuralType();
@@ -252,9 +254,9 @@ namespace Grevit.Revit
 
         // If there is an element with the same GID existing, update it
         // Otherwise create a new one
-        if ( GrevitBuildModel.existing_Elements.ContainsKey( familyInstance.GID ) )
+        if ( myExistingElements.ContainsKey( familyInstance.GID ) )
         {
-          newFamilyInstance = ( Autodesk.Revit.DB.FamilyInstance ) revitDoc.GetElement( GrevitBuildModel.existing_Elements[ familyInstance.GID ] );
+          newFamilyInstance = ( Autodesk.Revit.DB.FamilyInstance ) revitDoc.GetElement( myExistingElements[ familyInstance.GID ] );
           if ( newFamilyInstance.Location.GetType() == typeof( LocationPoint ) )
           {
             LocationPoint lp = ( LocationPoint ) newFamilyInstance.Location;
@@ -310,6 +312,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myExistingElements = host == null ? GrevitBuildModel.ExistingElements : host.ExistingElements;
 
       // Get the Family Symbol 
       bool found = false;
@@ -334,9 +337,9 @@ namespace Grevit.Revit
 
         // If the element already exists just update it
         // Otherwise create a new one
-        if ( GrevitBuildModel.existing_Elements.ContainsKey( familyInstance.GID ) )
+        if ( myExistingElements.ContainsKey( familyInstance.GID ) )
         {
-          newFamilyInstance = ( Autodesk.Revit.DB.FamilyInstance ) revitDoc.GetElement( GrevitBuildModel.existing_Elements[ familyInstance.GID ] );
+          newFamilyInstance = ( Autodesk.Revit.DB.FamilyInstance ) revitDoc.GetElement( myExistingElements[ familyInstance.GID ] );
           if ( newFamilyInstance.Location.GetType() == typeof( LocationPoint ) )
           {
             LocationPoint lp = ( LocationPoint ) newFamilyInstance.Location;
@@ -494,7 +497,7 @@ namespace Grevit.Revit
 
 #if ( Revit2017 || Revit2018 || Revit2019 )
       // Create the new Level
-      Autodesk.Revit.DB.Level newLevel = Autodesk.Revit.DB.Level.Create( revitDoc, level.height * GrevitBuildModel.Scale );
+      Autodesk.Revit.DB.Level newLevel = Autodesk.Revit.DB.Level.Create( revitDoc, level.height * (host == null ? GrevitBuildModel.Scale : host.Scale) );
 #else
       Autodesk.Revit.DB.Level newLevel = revitDoc.Create.NewLevel( level.height );
 #endif
@@ -526,6 +529,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myExistingElements = host == null ? GrevitBuildModel.ExistingElements : host.ExistingElements;
 
       // Get the Family, Type and Level
       bool found = false;
@@ -560,8 +564,8 @@ namespace Grevit.Revit
 
         // If the column already exists update it
         // Otherwise create a new one
-        if ( GrevitBuildModel.existing_Elements.ContainsKey( column.GID ) )
-          familyInstance = ( Autodesk.Revit.DB.FamilyInstance ) revitDoc.GetElement( GrevitBuildModel.existing_Elements[ column.GID ] );
+        if ( myExistingElements.ContainsKey( column.GID ) )
+          familyInstance = ( Autodesk.Revit.DB.FamilyInstance ) revitDoc.GetElement( myExistingElements[ column.GID ] );
         else
           familyInstance = revitDoc.Create.NewFamilyInstance( lower, sym, level, Autodesk.Revit.DB.Structure.StructuralType.Column );
 
@@ -853,6 +857,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myExistingElements = host == null ? GrevitBuildModel.ExistingElements : host.ExistingElements;
 
       // Create a List of Curves for the ouline
       List<Curve> curves = new List<Curve>();
@@ -884,9 +889,9 @@ namespace Grevit.Revit
         {
           Element rvtRoof = null;
 
-          if ( GrevitBuildModel.existing_Elements.ContainsKey( roof.GID ) )
+          if ( myExistingElements.ContainsKey( roof.GID ) )
           {
-            rvtRoof = revitDoc.GetElement( GrevitBuildModel.existing_Elements[ roof.GID ] );
+            rvtRoof = revitDoc.GetElement( myExistingElements[ roof.GID ] );
           }
           else
           {
@@ -915,6 +920,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myExistingElements = host == null ? GrevitBuildModel.ExistingElements : host.ExistingElements;
 
       double elevation = 0;
       bool init = false;
@@ -950,8 +956,8 @@ namespace Grevit.Revit
         Autodesk.Revit.DB.Wall wall;
 
         // If the wall exists update it otherwise create a new one
-        if ( GrevitBuildModel.existing_Elements.ContainsKey( w.GID ) )
-          revitDoc.Delete( GrevitBuildModel.existing_Elements[ w.GID ] );
+        if ( myExistingElements.ContainsKey( w.GID ) )
+          revitDoc.Delete( myExistingElements[ w.GID ] );
 
         double offset = elevation - levelElement.Elevation;
 
@@ -1038,6 +1044,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myExistingElements = host == null ? GrevitBuildModel.ExistingElements : host.ExistingElements;
 
       // Get the family Symbol
       bool found = false;
@@ -1052,8 +1059,8 @@ namespace Grevit.Revit
 
         // If the adaptive component already exists get it
         // Otherwise create a new one
-        if ( GrevitBuildModel.existing_Elements.ContainsKey( adaptive.GID ) )
-          adaptiveComponent = ( FamilyInstance ) revitDoc.GetElement( GrevitBuildModel.existing_Elements[ adaptive.GID ] );
+        if ( myExistingElements.ContainsKey( adaptive.GID ) )
+          adaptiveComponent = ( FamilyInstance ) revitDoc.GetElement( myExistingElements[ adaptive.GID ] );
         else
           adaptiveComponent = Autodesk.Revit.DB.AdaptiveComponentInstanceUtils.CreateAdaptiveComponentInstance( revitDoc, faimlySymbol );
 
@@ -1097,6 +1104,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myExistingElements = host == null ? GrevitBuildModel.ExistingElements : host.ExistingElements;
 
       #region baseLineCurve
 
@@ -1127,10 +1135,10 @@ namespace Grevit.Revit
           {
             if ( i == pline.points.Count - 1 )
             {
-              if ( pline.closed ) grevitWall.Create( pline.points[ i ], pline.points[ 0 ] );
+              if ( pline.closed ) grevitWall.Create( pline.points[ i ], pline.points[ 0 ], host );
             }
             else
-              grevitWall.Create( pline.points[ i ], pline.points[ i + 1 ] );
+              grevitWall.Create( pline.points[ i ], pline.points[ i + 1 ], host );
 
           }
         }
@@ -1176,9 +1184,9 @@ namespace Grevit.Revit
 
         // If the wall already exists update the baseline curve
         // Otherwise create a new wall
-        if ( GrevitBuildModel.existing_Elements.ContainsKey( grevitWall.GID ) )
+        if ( myExistingElements.ContainsKey( grevitWall.GID ) )
         {
-          wall = ( Autodesk.Revit.DB.Wall ) revitDoc.GetElement( GrevitBuildModel.existing_Elements[ grevitWall.GID ] );
+          wall = ( Autodesk.Revit.DB.Wall ) revitDoc.GetElement( myExistingElements[ grevitWall.GID ] );
           LocationCurve locationCurve = ( LocationCurve ) wall.Location;
           locationCurve.Curve = baselineCurve;
         }
@@ -1190,7 +1198,7 @@ namespace Grevit.Revit
         if ( paramtc != null && !paramtc.IsReadOnly ) paramtc.Set( ElementId.InvalidElementId );
 
         Autodesk.Revit.DB.Parameter heightParam = wall.get_Parameter( BuiltInParameter.WALL_USER_HEIGHT_PARAM );
-        if ( heightParam != null && !heightParam.IsReadOnly ) heightParam.Set( grevitWall.height * GrevitBuildModel.Scale );
+        if ( heightParam != null && !heightParam.IsReadOnly ) heightParam.Set( grevitWall.height * (host == null ? GrevitBuildModel.Scale : host.Scale) );
 
         // Apply the automatic join setting
         if ( !grevitWall.join )
@@ -1210,8 +1218,8 @@ namespace Grevit.Revit
 
         // This method is applying the parameters and GID settings
         // itself because it might run recursively (see Polyline)
-        grevitWall.SetParameters( wall );
-        grevitWall.StoreGID( wall.Id );
+        grevitWall.SetParameters( wall, host );
+        grevitWall.StoreGID( wall.Id,  host );
       }
 
       // Always returns null as it handles
@@ -1224,6 +1232,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myCreatedElements = host == null ? GrevitBuildModel.CreatedElements : host.CreatedElements;
 
       Reference reference = Reference.ParseFromStableRepresentation( revitDoc, faceWall.Reference );
       if ( reference == null ) return null;
@@ -1241,6 +1250,7 @@ namespace Grevit.Revit
     {
       // to maintain backwards compatibility when this method is called from the old grevit build command
       var revitDoc = host == null ? GrevitBuildModel.document : host.RevitDoc;
+      var myCreatedElements = host == null ? GrevitBuildModel.CreatedElements : host.CreatedElements;
 
       SelectionFilterElement filter = ( SelectionFilterElement ) Utilities.GetElementByName( revitDoc, typeof( SelectionFilterElement ), selection.Name );
 
@@ -1250,9 +1260,9 @@ namespace Grevit.Revit
       List<ElementId> elements = new List<ElementId>();
       foreach ( string id in selection.IDs )
       {
-        if ( GrevitBuildModel.created_Elements.ContainsKey( id ) )
+        if ( myCreatedElements.ContainsKey( id ) )
         {
-          ElementId eid = GrevitBuildModel.created_Elements[ id ];
+          ElementId eid = myCreatedElements[ id ];
           if ( eid != ElementId.InvalidElementId )
           {
             elements.Add( eid );

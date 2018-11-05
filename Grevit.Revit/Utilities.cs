@@ -780,6 +780,10 @@ namespace Grevit.Revit
       types.Add( typeof( Autodesk.Revit.DB.Floor ) );
       types.Add( typeof( Autodesk.Revit.DB.FamilyInstance ) );
       types.Add( typeof( Autodesk.Revit.DB.RoofBase ) );
+      types.Add( typeof( Autodesk.Revit.DB.Grid ) );
+      types.Add( typeof( Autodesk.Revit.DB.ReferencePlane ) );
+      types.Add( typeof( Autodesk.Revit.DB.Level ) );
+      types.Add( typeof( Autodesk.Revit.DB.Opening ) );
 
       List<Element> myfilter = document.GetElementsFromClasses( types );
       //document.GetElement()

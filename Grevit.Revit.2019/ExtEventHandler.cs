@@ -15,29 +15,20 @@ namespace Grevit.Revit
   public class SpeckleExternalEventHandler : IExternalEventHandler
   {
     public Receiver Receiver;
-    public ISpeckleRevitBuilder Builder;
-
     /// <summary>
     /// Where the speckle build and bake happens
     /// </summary>
     /// <param name="app"></param>
     public void Execute( UIApplication app )
     {
-      if ( Receiver.PreviousStream == null )
-      {
-        var x = "Should not happen";
-      }
-
       var deleted = Receiver.PreviousStream.Objects.Except( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
       var added = Receiver.Stream.Objects.Except( Receiver.PreviousStream.Objects, new SpeckleObjectComparer() ).ToList();
-      var unchanged = Receiver.PreviousStream.Objects.Intersect( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
+      //var unchanged = Receiver.PreviousStream.Objects.Intersect( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
 
 
       //var pizza = SpeckleCore.Converter.Deserialise(Receiver.Stream.Objects);
 
       var units = ( ( string ) Receiver.Stream.BaseProperties.units ).ToLower();
-
-      //return;
 
       // TODO: Check
       double scale = 1;
@@ -68,11 +59,14 @@ namespace Grevit.Revit
 
       };
 
-      var myGrevit = new GrevitBuildModel( app.ActiveUIDocument.Document );
+      //var myGrevit = new GrevitBuildModel( app.ActiveUIDocument.Document );
 
-      myGrevit.SpeckleBake( added, deleted, unchanged, scale );
+      //myGrevit.SpeckleBake( added, deleted, unchanged, scale );
 
-      Builder.Build( null, scale );
+      //Builder.Build( null, scale );
+
+      if(deleted.Count > 0) Receiver.Builder.Delete( deleted );
+      if(added.Count > 0) Receiver.Builder.Add( added, scale );
 
       //grevit.BuildModel( new Grevit.Types.ComponentCollection()
       //{

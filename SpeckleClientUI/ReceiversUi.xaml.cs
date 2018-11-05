@@ -17,60 +17,67 @@ namespace SpeckleClientUI
   {
     private ObservableCollection<Receiver> _receivers = new ObservableCollection<Receiver>();
     private ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
-    public delegate void ReceivedData(Receiver receiver);
+
+    public delegate void ReceivedData( Receiver receiver );
     public event ReceivedData OnUpdateGlobal;
 
-    public ReceiversUi()
+    public delegate void ReceiverAdded( Receiver receiver );
+    public event ReceiverAdded OnReceiverAdded;
+
+    public ISpeckleHostBuilderGenerator BuildGenerator;
+
+    public ReceiversUi( )
     {
       InitializeComponent();
       RefreshAccounts();
     }
 
-    public void RefreshAccounts()
+    public void RefreshAccounts( )
     {
       LocalContext.Init();
-      _accounts = new ObservableCollection<Account>(LocalContext.GetAllAccounts());
+      _accounts = new ObservableCollection<Account>( LocalContext.GetAllAccounts() );
       AccountsComboBox.ItemsSource = _accounts;
-      if (_accounts.Any(x => x.IsDefault))
+      if ( _accounts.Any( x => x.IsDefault ) )
       {
-        AccountsComboBox.SelectedIndex = _accounts.IndexOf(_accounts.First(x => x.IsDefault));
+        AccountsComboBox.SelectedIndex = _accounts.IndexOf( _accounts.First( x => x.IsDefault ) );
       }
 
       ReceiverItemsControl.ItemsSource = _receivers;
     }
 
-      private void NewReceiverClick(object sender, RoutedEventArgs e)
+    private void NewReceiverClick( object sender, RoutedEventArgs e )
     {
-      if (StreamsComboBox.SelectedIndex == -1 || AccountsComboBox.SelectedIndex == -1)
+      if ( StreamsComboBox.SelectedIndex == -1 || AccountsComboBox.SelectedIndex == -1 )
         return;
 
       var stream = StreamsComboBox.SelectedItem as SpeckleStream;
-      var account = _accounts[AccountsComboBox.SelectedIndex];
+      var account = _accounts[ AccountsComboBox.SelectedIndex ];
 
       // check if the stream is already there
-      if (_receivers.Where(rec => rec.StreamId == stream.StreamId && rec.RestApi == account.RestApi).Count() > 0)
+      if ( _receivers.Where( rec => rec.StreamId == stream.StreamId && rec.RestApi == account.RestApi ).Count() > 0 )
         // TODO: fail in a nicer way than silently crapping out
         return;
 
-      _receivers.Add(new Receiver(stream.StreamId, account.ServerName, account.RestApi, account.Token, account.Email));
+
+      _receivers.Add( new Receiver( stream.StreamId, account.ServerName, account.RestApi, account.Token, account.Email ) { Builder = BuildGenerator.GetHostBuilder() } );
     }
 
     #region commands
 
-    private void OnClickReceiveStream(object sender, ExecutedRoutedEventArgs e)
+    private void OnClickReceiveStream( object sender, ExecutedRoutedEventArgs e )
     {
       var r = e.Parameter as Receiver;
 
       r.UpdateGlobal();
-      OnUpdateGlobal(r);
+      OnUpdateGlobal( r );
     }
 
 
 
-    private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    private void CommandBinding_CanExecute( object sender, CanExecuteRoutedEventArgs e )
     {
 
-      if (_receivers.Any(x => x.Transmitting))
+      if ( _receivers.Any( x => x.Transmitting ) )
       {
         e.CanExecute = false;
       }
@@ -82,7 +89,7 @@ namespace SpeckleClientUI
 
     #endregion
 
-    private void PasteClick(object sender, RoutedEventArgs e)
+    private void PasteClick( object sender, RoutedEventArgs e )
     {
       //var c = Clipboard.GetText();
       //if (c.Length>10)
@@ -90,22 +97,22 @@ namespace SpeckleClientUI
       //StreamId.Text = c;
     }
 
-    private void AccountsClick(object sender, RoutedEventArgs e)
+    private void AccountsClick( object sender, RoutedEventArgs e )
     {
-      var myForm = new SpecklePopup.MainWindow(false);
+      var myForm = new SpecklePopup.MainWindow( false );
       myForm.ShowDialog();
       RefreshAccounts();
     }
 
-    private async void AccountsComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void AccountsComboBoxSelectionChanged( object sender, SelectionChangedEventArgs e )
     {
-      if (AccountsComboBox.SelectedIndex == -1)
+      if ( AccountsComboBox.SelectedIndex == -1 )
       {
         return;
       }
 
       var client = new SpeckleApiClient();
-      var account = _accounts[AccountsComboBox.SelectedIndex];
+      var account = _accounts[ AccountsComboBox.SelectedIndex ];
 
       client.BaseUrl = account.RestApi;
       client.AuthToken = account.Token;

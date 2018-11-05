@@ -41,110 +41,116 @@ using SpeckleCore;
 using MaterialDesignColors;
 using MaterialDesignThemes;
 using System.Windows.Media;
+using SpeckleClientUI;
 
 namespace Grevit.Revit
 {
+  /// <summary>
+  /// Create Grevit UI
+  /// </summary>    
+  class GrevitUI : IExternalApplication
+  {
     /// <summary>
-    /// Create Grevit UI
-    /// </summary>    
-    class GrevitUI : IExternalApplication
+    /// Grevit Assembly path
+    /// </summary>
+    static string path = typeof( GrevitUI ).Assembly.Location;
+
+    /// <summary>
+    /// Create UI on StartUp
+    /// </summary>
+    /// <param name="application"></param>
+    /// <returns></returns>
+    public Result OnStartup( UIControlledApplication application )
     {
-        /// <summary>
-        /// Grevit Assembly path
-        /// </summary>
-        static string path = typeof( GrevitUI ).Assembly.Location;
+      RibbonPanel grevitPanel = null;
 
-        /// <summary>
-        /// Create UI on StartUp
-        /// </summary>
-        /// <param name="application"></param>
-        /// <returns></returns>
-        public Result OnStartup( UIControlledApplication application )
-        {
-            RibbonPanel grevitPanel = null;
+      foreach ( RibbonPanel rpanel in application.GetRibbonPanels() )
+        if ( rpanel.Name == "Grevit" ) grevitPanel = rpanel;
 
-            foreach ( RibbonPanel rpanel in application.GetRibbonPanels() )
-                if ( rpanel.Name == "Grevit" ) grevitPanel = rpanel;
+      if ( grevitPanel == null ) grevitPanel = application.CreateRibbonPanel( "Grevit" );
 
-            if ( grevitPanel == null ) grevitPanel = application.CreateRibbonPanel( "Grevit" );
+      PushButton commandButton = grevitPanel.AddItem( new PushButtonData( "GrevitCommand", "Grevit", path, "Grevit.Revit.GrevitCommand" ) ) as PushButton;
+      commandButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+          Properties.Resources.paper_airplane.GetHbitmap(),
+          IntPtr.Zero,
+          System.Windows.Int32Rect.Empty,
+          BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
 
-            PushButton commandButton = grevitPanel.AddItem( new PushButtonData( "GrevitCommand", "Grevit", path, "Grevit.Revit.GrevitCommand" ) ) as PushButton;
-            commandButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                Properties.Resources.paper_airplane.GetHbitmap(),
-                IntPtr.Zero,
-                System.Windows.Int32Rect.Empty,
-                BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
+      commandButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "http://grevit.net/" ) );
 
-            commandButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "http://grevit.net/" ) );
+      PushButton parameterButton = grevitPanel.AddItem( new PushButtonData( "ParameterNames", "Parameter names", path, "Grevit.Revit.ParameterNames" ) ) as PushButton;
+      parameterButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+          Properties.Resources.tag_hash.GetHbitmap(),
+          IntPtr.Zero,
+          System.Windows.Int32Rect.Empty,
+          BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
 
-            PushButton parameterButton = grevitPanel.AddItem( new PushButtonData( "ParameterNames", "Parameter names", path, "Grevit.Revit.ParameterNames" ) ) as PushButton;
-            parameterButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                Properties.Resources.tag_hash.GetHbitmap(),
-                IntPtr.Zero,
-                System.Windows.Int32Rect.Empty,
-                BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
+      parameterButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "http://grevit.net/" ) );
 
-            parameterButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "http://grevit.net/" ) );
+      PushButton getFaceRefButton = grevitPanel.AddItem( new PushButtonData( "GetFaceReference", "Face Reference", path, "Grevit.Revit.GrevitFaceReference" ) ) as PushButton;
+      getFaceRefButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+          Properties.Resources.radio_button.GetHbitmap(),
+          IntPtr.Zero,
+          System.Windows.Int32Rect.Empty,
+          BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
 
-            PushButton getFaceRefButton = grevitPanel.AddItem( new PushButtonData( "GetFaceReference", "Face Reference", path, "Grevit.Revit.GrevitFaceReference" ) ) as PushButton;
-            getFaceRefButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                Properties.Resources.radio_button.GetHbitmap(),
-                IntPtr.Zero,
-                System.Windows.Int32Rect.Empty,
-                BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
+      getFaceRefButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "http://grevit.net/" ) );
 
-            getFaceRefButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "http://grevit.net/" ) );
+      PushButton speckleButton = grevitPanel.AddItem( new PushButtonData( "Speckle Client", "Speckle Client", path, "Grevit.Revit.SpeckleClient" ) ) as PushButton;
 
-            PushButton speckleButton = grevitPanel.AddItem( new PushButtonData( "Speckle Client", "Speckle Client", path, "Grevit.Revit.SpeckleClient" ) ) as PushButton;
+      speckleButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+          Properties.Resources.speckle.GetHbitmap(),
+          IntPtr.Zero,
+          System.Windows.Int32Rect.Empty,
+          BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
 
-            speckleButton.LargeImage = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                Properties.Resources.speckle.GetHbitmap(),
-                IntPtr.Zero,
-                System.Windows.Int32Rect.Empty,
-                BitmapSizeOptions.FromWidthAndHeight( 32, 32 ) );
+      speckleButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "https://github.com/speckleworks/Grevit" ) );
 
-            speckleButton.SetContextualHelp( new ContextualHelp( ContextualHelpType.Url, "https://github.com/speckleworks/Grevit" ) );
-
-            return Result.Succeeded;
-        }
-
-        public Result OnShutdown( UIControlledApplication a )
-        {
-            return Result.Succeeded;
-        }
-
+      return Result.Succeeded;
     }
 
-    [Transaction( TransactionMode.Manual )]
-    public class SpeckleClient : IExternalCommand
+    public Result OnShutdown( UIControlledApplication a )
     {
-        public static bool Launched = false;
-        public static SpeckleClientWindow speckleClient;
-        public static GrevitBuildModel grevit;
+      return Result.Succeeded;
+    }
 
-        public Result Execute( ExternalCommandData commandData, ref string message, ElementSet elements )
-        {
-            if ( !Launched )
-            {
-                var uiApp = commandData.Application;
-                grevit = new GrevitBuildModel( commandData.Application.ActiveUIDocument.Document );
+  }
 
-                var hand = new SpeckleExternalEventHandler();
-                var eve = ExternalEvent.Create( hand );
+  [Transaction( TransactionMode.Manual )]
+  public class SpeckleClient : IExternalCommand, ISpeckleHostBuilderGenerator
+  {
+    public static bool Launched = false;
+    public static SpeckleClientWindow speckleClient;
+    public static Document RevitDoc;
 
-                speckleClient = new SpeckleClientWindow( uiApp, eve, hand );
-                speckleClient.Show();
+    public Result Execute( ExternalCommandData commandData, ref string message, ElementSet elements )
+    {
+      if ( !Launched )
+      {
+        var uiApp = commandData.Application;
+        RevitDoc = uiApp.ActiveUIDocument.Document;
 
-                Launched = true;
-                return Result.Succeeded;
-            }
+        var hand = new SpeckleExternalEventHandler();
+        var eve = ExternalEvent.Create( hand );
 
-            speckleClient.Show();
-            speckleClient.Focus();
+        speckleClient = new SpeckleClientWindow( uiApp, eve, hand, this );
+        speckleClient.Show();
 
-            return Result.Succeeded;
-        }
-    }    
+        Launched = true;
+        return Result.Succeeded;
+      }
+
+      speckleClient.Show();
+      speckleClient.Focus();
+
+      return Result.Succeeded;
+    }
+
+    public ISpeckleHostBuilder GetHostBuilder( )
+    {
+      return new SpeckleGrevitBuilder( RevitDoc );
+    }
+  }
 }
 
 
