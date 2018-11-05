@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Commands.cs" />
+    <Compile Include="Data\IContext.cs" />
     <Compile Include="ReceiversUi.xaml.cs">
       <DependentUpon>ReceiversUi.xaml</DependentUpon>
     </Compile>
