@@ -7,17 +7,24 @@ using SpeckleCore;
 
 namespace SpeckleClientUI
 {
+  /// <summary>
+  /// TODO: Extract to separate ui project
+  /// Defines a build method that needs to be implemented by any potential speckle baker.
+  /// </summary>
   public interface ISpeckleHostBuilder
   {
-    void Add( IEnumerable<SpeckleObject> objects, double scale );
-
-    void Delete( IEnumerable<SpeckleObject> objects );
-
     void Build( Receiver receiver );
   }
 
-  public  interface ISpeckleHostBuilderGenerator
+  /// <summary>
+  /// TODO: Extract to separate ui project.
+  /// </summary>
+  public interface ISpeckleHostBuilderGenerator
   {
+    /// <summary>
+    /// Factory for getting the builder set up with app accesible document, etc.
+    /// </summary>
+    /// <returns></returns>
     ISpeckleHostBuilder GetHostBuilder( );
   }
 }

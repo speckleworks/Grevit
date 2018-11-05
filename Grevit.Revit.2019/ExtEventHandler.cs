@@ -16,35 +16,14 @@ namespace Grevit.Revit
   {
     public Receiver Receiver;
     /// <summary>
-    /// Where the speckle build and bake happens
+    /// Where the speckle build and bake gets triggered.
     /// </summary>
     /// <param name="app"></param>
     public void Execute( UIApplication app )
     {
       // There's something wrong with the line below.
+      // TODO: Cleanup flow and referncing, etc. I obviously got confused in the process.
       Receiver.Builder.Build( Receiver );
-
-      //try
-      //{
-      //  var deleted = Receiver.PreviousStream.Objects.Where( old => !Receiver.Stream.Objects.Any( o => o._id == old._id ) ).ToList();
-
-      //  var added = Receiver.Stream.Objects.Where( obj => !Receiver.PreviousStream.Objects.Any( o => o._id == obj._id ) ).ToList();
-
-      //  var pause = "here";
-
-      //  if ( deleted != null && deleted.Count > 0 ) Receiver.Builder.Delete( deleted );
-      //  if ( added != null && added.Count > 0 ) Receiver.Builder.Add( added, scale );
-      //  Receiver.CommitStage();
-
-      //}
-      //catch(Exception  e) {
-      //  Receiver.Builder.Add( Receiver.Stream.Objects, scale );
-      //}
-
-      //grevit.BuildModel( new Grevit.Types.ComponentCollection()
-      //{
-      //    Items = pizza.Where( xx => xx is Grevit.Types.Component ).Select( xxx => xxx as Grevit.Types.Component ).ToList()
-      //});
     }
 
     public string GetName( )

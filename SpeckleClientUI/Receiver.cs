@@ -98,14 +98,14 @@ namespace SpeckleClientUI
       Stream = new SpeckleStream() { Objects = new List<SpeckleObject>() };
       PreviousStream = new SpeckleStream() { Objects = new List<SpeckleObject>() };
 
+      // TODO Set document name, etc. from Builder  object
       _client.IntializeReceiver( StreamId, "", "Revit", "", AuthToken );
     }
 
     public virtual void UpdateGlobal( )
     {
       Transmitting = true;
-      // clone the previous state
-      //_PreviousStream = SpeckleStream.FromJson( Stream.ToJson() );
+
       // get the new state
       Stream = _client.StreamGetAsync( _client.StreamId, null ).Result.Resource;
       // update matteo's local binding vars, etc.
@@ -230,7 +230,10 @@ namespace SpeckleClientUI
       }
     }
 
-    // fully commits objects
+    /// <summary>
+    /// Makes sure diffing happens correctly by commiting the last stage to memory only
+    /// on a succesfull operation.
+    /// </summary>
     public void CommitStage( )
     {
       PreviousStream = SpeckleStream.FromJson( Stream.ToJson() ); 
