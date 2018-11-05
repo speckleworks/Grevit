@@ -12,6 +12,8 @@ namespace SpeckleClientUI
     void Add( IEnumerable<SpeckleObject> objects, double scale );
 
     void Delete( IEnumerable<SpeckleObject> objects );
+
+    void Build( Receiver receiver );
   }
 
   public  interface ISpeckleHostBuilderGenerator

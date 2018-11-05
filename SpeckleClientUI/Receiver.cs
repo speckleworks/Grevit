@@ -63,13 +63,12 @@ namespace SpeckleClientUI
     /// </summary>
     public SpeckleStream _PreviousStream;
 
-    public List<string> objIds;
-    public List<string> previousIds;
-
     /// <summary>
     /// Does the heavy lifting
     /// </summary>
     public ISpeckleHostBuilder Builder;
+
+    public double Scale = 1;
 
     public Receiver( string streamid, string server, string restapi, string authtoken, string email )
     {
@@ -159,9 +158,33 @@ namespace SpeckleClientUI
         LocalContext.AddObject( obj, _client.BaseUrl );
       }
 
-      var copy = _PreviousStream;
-      var copy2 = Stream;
+      var units = ( ( string ) Stream.BaseProperties.units ).ToLower();
 
+      // TODO: Check
+      switch ( units )
+      {
+        case "kilometers":
+          Scale = 3.2808399 * 1000;
+          break;
+        case "meters":
+          Scale = 3.2808399;
+          break;
+        case "centimeters":
+          Scale = 0.032808399;
+          break;
+        case "millimiters":
+          Scale = 0.0032808399;
+          break;
+        case "miles":
+          Scale = 5280;
+          break;
+        case "feet":
+          Scale = 1;
+          break;
+        case "inches":
+          Scale = 0.0833333;
+          break;
+      };
 
       Transmitting = false;
       Expired = false;

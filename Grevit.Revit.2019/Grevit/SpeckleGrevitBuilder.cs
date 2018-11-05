@@ -27,36 +27,83 @@ namespace Grevit.Revit
       ExistingElements = new Dictionary<string, ElementId>();
     }
 
-    public void Build( IEnumerable<SpeckleObject> objects, double scale )
+    public void Build( Receiver receiver )
     {
-      if ( objects == null )
+      Scale = receiver.Scale;
+      GrevitBuildModel.Scale = Scale;
+
+      CreatedElements = new Dictionary<string, ElementId>();
+      ExistingElements = new Dictionary<string, ElementId>();
+
+      var speckleObjects = receiver.Stream.Objects;
+
+      var ExistingGrevitElems = RevitDoc.GetExistingGrevitElements( true );
+
+      var deleted = receiver.PreviousStream.Objects.Where( old => !receiver.Stream.Objects.Any( o => o._id == old._id ) ).ToList();
+
+      var toDelete = ExistingGrevitElems.Where( elem => deleted.Any( a => a.Hash == elem.Key ) ).ToList();
+
+      var added = receiver.Stream.Objects.Where( obj => !receiver.PreviousStream.Objects.Any( o => o._id == obj._id ) ).ToList();
+
+      var userDeleted = receiver.Stream.Objects.Where( obj => !ExistingGrevitElems.Any( kvp => kvp.Key == obj.Hash ) ).ToList();
+
+      foreach ( var obj in userDeleted )
       {
-        throw new ArgumentNullException( nameof( objects ) );
+        if ( !added.Any( o => o._id == obj._id ) )
+          added.Add( obj );
       }
 
-      Scale = scale;
+      var DeleteTransaction = new Transaction( RevitDoc, "SpeckleGrevitDelete" );
+      DeleteTransaction.Start();
 
-      var grevitObjects = SpeckleCore.Converter.Deserialise( objects ).Select( o => o as Component ).ToList();
-      var speckleObjetcs = objects.ToList();
+      RevitDoc.Delete( toDelete.Select( x => x.Value ).ToList() );
 
-      // replace grevit id with speckle hash
-      int k = 0;
-      foreach ( var gObj in grevitObjects )
-        gObj.GID = speckleObjetcs[ k++ ].Hash;
+      DeleteTransaction.Commit();
+      DeleteTransaction.Dispose();
 
-      var readyToBuild = grevitObjects.Where( g => !g.stalledForReference ).ToList();
+      var grevitCompsToAdd = SpeckleCore.Converter.Deserialise( added ).Select( g => g as Component ).ToList();
+      for ( int i = 0; i < added.Count(); i++ )
+        grevitCompsToAdd[ i ].GID = added[ i ].Hash;
+
+      var readyToBuild = grevitCompsToAdd.Where( g => !g.stalledForReference ).ToList();
+
+      string errors = "";
+
+      var AddTransaction = new Transaction( RevitDoc, "SpeckleGrevitAdd" );
+      AddTransaction.Start();
 
       foreach ( var component in readyToBuild )
       {
-        component.Build( false, this );
+        try
+        {
+          component.Build( false, this );
+        }
+        catch ( Exception e )
+        {
+          errors += e.InnerException?.Message + "\n";
+        }
       }
 
-      var withReferences = grevitObjects.Where( g => g.stalledForReference ).ToList();
-
+      var withReferences = grevitCompsToAdd.Where( g => g.stalledForReference ).ToList();
       foreach ( var component in withReferences )
       {
-        component.Build( true, this );
+        try
+        {
+          component.Build( true, this );
+        }
+        catch ( Exception e )
+        {
+          errors += e.InnerException?.Message + "\n";
+        }
       }
+
+      AddTransaction.Commit();
+      AddTransaction.Dispose();
+
+      if ( errors != "" )
+        System.Windows.MessageBox.Show( errors, @"¯\_(ツ)_/¯" );
+
+      receiver.CommitStage();
     }
 
     public void Delete( IEnumerable<SpeckleObject> objects )
@@ -76,7 +123,7 @@ namespace Grevit.Revit
       var DeleteTransaction = new Transaction( RevitDoc, "SpeckleGrevitDelete" );
       DeleteTransaction.Start();
 
-      RevitDoc.Delete(toDelete.Select(x =>x.Value).ToList());
+      RevitDoc.Delete( toDelete.Select( x => x.Value ).ToList() );
 
       DeleteTransaction.Commit();
       DeleteTransaction.Dispose();
@@ -92,9 +139,7 @@ namespace Grevit.Revit
       var spkObjs = objects.ToList();
 
       for ( int i = 0; i < spkObjs.Count(); i++ )
-      {
         grevitComps[ i ].GID = spkObjs[ i ].Hash;
-      }
 
       var AddTransaction = new Transaction( RevitDoc, "SpeckleGrevitAdd" );
       AddTransaction.Start();
