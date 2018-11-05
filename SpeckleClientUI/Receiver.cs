@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -26,49 +26,51 @@ namespace SpeckleClientUI
     private bool _expired = true;
     private SpeckleApiClient _client;
 
-    internal string AuthToken { get => _authToken; set { _authToken = value; NotifyPropertyChanged("AuthToken"); } }
+    internal string AuthToken { get => _authToken; set { _authToken = value; NotifyPropertyChanged( "AuthToken" ); } }
 
-    public string RestApi { get => _restApi; set { _restApi = value; NotifyPropertyChanged("RestApi"); } }
-    public string Email { get => _email; set { _email = value; NotifyPropertyChanged("Email"); } }
-    public string Server { get => _server; set { _server = value; NotifyPropertyChanged("Server"); } }
-    public string StreamId { get => _streamId; set { _streamId = value; NotifyPropertyChanged("StreamId"); } }
-    public string StreamName { get => _streamName; set { _streamName = value; NotifyPropertyChanged("StreamName"); } }
-    public string Message { get => _message; set { _message = value; NotifyPropertyChanged("Message"); } }
+    public string RestApi { get => _restApi; set { _restApi = value; NotifyPropertyChanged( "RestApi" ); } }
+    public string Email { get => _email; set { _email = value; NotifyPropertyChanged( "Email" ); } }
+    public string Server { get => _server; set { _server = value; NotifyPropertyChanged( "Server" ); } }
+    public string StreamId { get => _streamId; set { _streamId = value; NotifyPropertyChanged( "StreamId" ); } }
+    public string StreamName { get => _streamName; set { _streamName = value; NotifyPropertyChanged( "StreamName" ); } }
+    public string Message { get => _message; set { _message = value; NotifyPropertyChanged( "Message" ); } }
     public bool Transmitting
     {
       get => _transmitting;
-      set 
+      set
       {
         _transmitting = value;
-        NotifyPropertyChanged("Transmitting");
+        NotifyPropertyChanged( "Transmitting" );
 
-        _dispatcher.Invoke(new Action(() =>
-            CommandManager.InvalidateRequerySuggested()
-          ));
+        _dispatcher.Invoke( new Action( ( ) =>
+              CommandManager.InvalidateRequerySuggested()
+          ) );
 
       }
     }
-    public bool Expired { get => _expired; set { _expired = value; NotifyPropertyChanged("Expired"); } }
-    
+    public bool Expired { get => _expired; set { _expired = value; NotifyPropertyChanged( "Expired" ); } }
+
     /// <summary>
     /// Keeps track of the previous version of the stream.
     /// </summary>
     public SpeckleStream Stream;
-    
+
     /// <summary>
     /// Keeps track of the previous version of the stream.
     /// </summary>
     public SpeckleStream PreviousStream;
-    
+
     /// <summary>
     /// Hidden hidden secret secret
     /// </summary>
     public SpeckleStream _PreviousStream;
-    
+
     /// <summary>
     /// Does the heavy lifting
     /// </summary>
     public ISpeckleHostBuilder Builder;
+
+    public double Scale = 1;
 
     private readonly Dispatcher _dispatcher;
 
@@ -80,7 +82,7 @@ namespace SpeckleClientUI
       }
     }
 
-    public Receiver(Dispatcher dispatcher, string streamid, string server, string restapi, string authtoken, string email) 
+    public Receiver( Dispatcher dispatcher, string streamid, string server, string restapi, string authtoken, string email )
     {
       this._dispatcher = dispatcher;
 
@@ -92,9 +94,9 @@ namespace SpeckleClientUI
       RestApi = restapi;
       AuthToken = authtoken;
 
-      _client = new SpeckleApiClient(RestApi, true);
+      _client = new SpeckleApiClient( RestApi, true );
 
-      _client.OnReady += (sender, e) =>
+      _client.OnReady += ( sender, e ) =>
       {
         UpdateMeta();
         Stream = _client.Stream;
@@ -102,27 +104,27 @@ namespace SpeckleClientUI
 
       _client.OnWsMessage += OnWsMessage;
 
-      _client.OnError += (sender, e) =>
+      _client.OnError += ( sender, e ) =>
       {
-        Console.Write(e);
+        Console.Write( e );
       };
 
       // TODO Set document name, etc. from Builder  object
-      _client.IntializeReceiver(StreamId, "", "Dynamo", "", AuthToken);
+      _client.IntializeReceiver( StreamId, "", "Dynamo", "", AuthToken );
     }
 
-    public virtual void UpdateGlobal()
+    public virtual void UpdateGlobal( )
     {
       Transmitting = true;
-      Stream = _client.StreamGetAsync(_client.StreamId, null).Result.Resource;
+      Stream = _client.StreamGetAsync( _client.StreamId, null ).Result.Resource;
       StreamName = Stream.Name;
 
       Message = "Getting objects";
 
-      LocalContext.GetObjects(Stream.Objects, _client.BaseUrl);
+      LocalContext.GetObjects( Stream.Objects, _client.BaseUrl );
 
       // filter out the objects that were not in the cache and still need to be retrieved
-      var payload = Stream.Objects.Where(o => o.Type == SpeckleObjectType.Placeholder).Select(obj => obj._id).ToArray();
+      var payload = Stream.Objects.Where( o => o.Type == SpeckleObjectType.Placeholder ).Select( obj => obj._id ).ToArray();
 
       // how many objects to request from the api at a time
       int maxObjRequestCount = 20;
@@ -131,67 +133,67 @@ namespace SpeckleClientUI
       var newObjects = new List<SpeckleObject>();
 
       // jump in `maxObjRequestCount` increments through the payload array
-      for (int i = 0; i < payload.Length; i += maxObjRequestCount)
+      for ( int i = 0; i < payload.Length; i += maxObjRequestCount )
       {
         // create a subset
-        var subPayload = payload.Skip(i).Take(maxObjRequestCount).ToArray();
+        var subPayload = payload.Skip( i ).Take( maxObjRequestCount ).ToArray();
 
         // get it sync as this is always execed out of the main thread
-        var res = _client.ObjectGetBulkAsync(subPayload, "omit=displayValue").Result;
+        var res = _client.ObjectGetBulkAsync( subPayload, "omit=displayValue" ).Result;
 
         // put them in our bucket
-        newObjects.AddRange(res.Resources);
+        newObjects.AddRange( res.Resources );
 
         // TODO: Bind this message to somewhere!
-        Message = String.Format("Got {0} out of {1} objects.", i, payload.Length);
-        System.Diagnostics.Debug.WriteLine(String.Format("Got {0} out of {1} objects.", i, payload.Length));
+        Message = String.Format( "Got {0} out of {1} objects.", i, payload.Length );
+        System.Diagnostics.Debug.WriteLine( String.Format( "Got {0} out of {1} objects.", i, payload.Length ) );
       }
 
       // populate the retrieved objects in the original stream's object list
-      foreach (var obj in newObjects)
+      foreach ( var obj in newObjects )
       {
-        var locationInStream = Stream.Objects.FindIndex(o => o._id == obj._id);
-        try { Stream.Objects[locationInStream] = obj; } catch { }
+        var locationInStream = Stream.Objects.FindIndex( o => o._id == obj._id );
+        try { Stream.Objects[ locationInStream ] = obj; } catch { }
 
         // add objects to cache
-        LocalContext.AddObject(obj, _client.BaseUrl);
+        LocalContext.AddObject( obj, _client.BaseUrl );
       }
 
-var units = ( ( string ) Stream.BaseProperties.units ).ToLower();
+      var units = ( ( string ) Stream.BaseProperties.units ).ToLower();
 
-// TODO: Check
-switch ( units )
-{
-    case "kilometers":
-    Scale = 3.2808399 * 1000;
-    break;
-    case "meters":
-    Scale = 3.2808399;
-    break;
-    case "centimeters":
-    Scale = 0.032808399;
-    break;
-    case "millimiters":
-    Scale = 0.0032808399;
-    break;
-    case "miles":
-    Scale = 5280;
-    break;
-    case "feet":
-    Scale = 1;
-    break;
-    case "inches":
-    Scale = 0.0833333;
-    break;
-};
+      // TODO: Check
+      switch ( units )
+      {
+        case "kilometers":
+          Scale = 3.2808399 * 1000;
+          break;
+        case "meters":
+          Scale = 3.2808399;
+          break;
+        case "centimeters":
+          Scale = 0.032808399;
+          break;
+        case "millimiters":
+          Scale = 0.0032808399;
+          break;
+        case "miles":
+          Scale = 5280;
+          break;
+        case "feet":
+          Scale = 1;
+          break;
+        case "inches":
+          Scale = 0.0833333;
+          break;
+      };
 
       Transmitting = false;
       Expired = false;
     }
 
-    public virtual void UpdateMeta()
+    public virtual void UpdateMeta( )
     {
-      var result = _client.StreamGetAsync(_client.StreamId, "fields=name").Result;
+      var result = _client.StreamGetAsync( _client.StreamId, "fields=name" ).Result;
 
       Stream = result.Resource;
 
@@ -199,9 +201,9 @@ switch ( units )
       Transmitting = false;
     }
 
-    public virtual void OnWsMessage(object source, SpeckleEventArgs e)
+    public virtual void OnWsMessage( object source, SpeckleEventArgs e )
     {
-      switch ((string)e.EventObject.args.eventType)
+      switch ( ( string ) e.EventObject.args.eventType )
       {
         case "update-global":
           Message = "Update available since " + DateTime.Now;
@@ -219,36 +221,36 @@ switch ( units )
       }
     }
 
-    public void Invoke(Action action)
+    public void Invoke( Action action )
     {
-      Debug.Assert(action != null);
+      Debug.Assert( action != null );
 
-      this._dispatcher.Invoke(action);
+      this._dispatcher.Invoke( action );
     }
 
-    public void BeginInvoke(Action action)
+    public void BeginInvoke( Action action )
     {
-      Debug.Assert(action != null);
+      Debug.Assert( action != null );
 
-      this._dispatcher.BeginInvoke(action);
+      this._dispatcher.BeginInvoke( action );
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
-    private void NotifyPropertyChanged(string info)
+    private void NotifyPropertyChanged( string info )
     {
-      if (PropertyChanged != null)
+      if ( PropertyChanged != null )
       {
-        PropertyChanged(this, new PropertyChangedEventArgs(info));
+        PropertyChanged( this, new PropertyChangedEventArgs( info ) );
       }
     }
-    
+
     /// <summary>
     /// Makes sure diffing happens correctly by commiting the last stage to memory only
     /// on a succesfull operation.
     /// </summary>
     public void CommitStage( )
     {
-        PreviousStream = SpeckleStream.FromJson( Stream.ToJson() );
+      PreviousStream = SpeckleStream.FromJson( Stream.ToJson() );
     }
 
   }
@@ -256,6 +258,6 @@ switch ( units )
   //only used for the DesignData xaml
   public class Receivers : List<Object>
   {
-    public Receivers() { }
+    public Receivers( ) { }
   }
 }
