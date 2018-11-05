@@ -54,12 +54,24 @@ namespace SpeckleClientUI
       var account = _accounts[ AccountsComboBox.SelectedIndex ];
 
       // check if the stream is already there
+<<<<<<< HEAD
       if ( _receivers.Where( rec => rec.StreamId == stream.StreamId && rec.RestApi == account.RestApi ).Count() > 0 )
         // TODO: fail in a nicer way than silently crapping out
+=======
+      if (_receivers.Where(rec => rec.StreamId == stream.StreamId && rec.RestApi == account.RestApi).Any())
+      {
+        MessageBox.Show("This stream has already been added!", @"¯\_(ツ)_/¯");
+>>>>>>> Matteo/dev/speckle-ui
         return;
+      }
+        
 
+<<<<<<< HEAD
 
       _receivers.Add( new Receiver( stream.StreamId, account.ServerName, account.RestApi, account.Token, account.Email ) { Builder = BuildGenerator.GetHostBuilder() } );
+=======
+      _receivers.Add(new Receiver(this.Dispatcher, stream.StreamId, account.ServerName, account.RestApi, account.Token, account.Email));
+>>>>>>> Matteo/dev/speckle-ui
     }
 
     #region commands
