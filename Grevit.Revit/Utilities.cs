@@ -786,7 +786,7 @@ namespace Grevit.Revit
       types.Add( typeof( Autodesk.Revit.DB.Opening ) );
 
       List<Element> myfilter = document.GetElementsFromClasses( types );
-      //document.GetElement()
+      //document.get
       List<string> banned = new List<string>();
 
       foreach ( Element em in myfilter )

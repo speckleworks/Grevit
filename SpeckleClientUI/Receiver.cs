@@ -58,6 +58,17 @@ namespace SpeckleClientUI
     /// </summary>
     public SpeckleStream PreviousStream;
 
+    /// <summary>
+    /// Hidden hidden secret secret
+    /// </summary>
+    public SpeckleStream _PreviousStream;
+
+    public List<string> objIds;
+    public List<string> previousIds;
+
+    /// <summary>
+    /// Does the heavy lifting
+    /// </summary>
     public ISpeckleHostBuilder Builder;
 
     public Receiver( string streamid, string server, string restapi, string authtoken, string email )
@@ -95,7 +106,7 @@ namespace SpeckleClientUI
     {
       Transmitting = true;
       // clone the previous state
-      //PreviousStream = SpeckleStream.FromJson( Stream.ToJson() );
+      //_PreviousStream = SpeckleStream.FromJson( Stream.ToJson() );
       // get the new state
       Stream = _client.StreamGetAsync( _client.StreamId, null ).Result.Resource;
       // update matteo's local binding vars, etc.
@@ -135,11 +146,22 @@ namespace SpeckleClientUI
       foreach ( var obj in newObjects )
       {
         var locationInStream = Stream.Objects.FindIndex( o => o._id == obj._id );
-        try { Stream.Objects[ locationInStream ] = obj; } catch { }
+        try
+        {
+          Stream.Objects[ locationInStream ] = obj;
+        }
+        catch ( Exception e )
+        {
+          var x = e;
+        }
 
         // add objects to cache
         LocalContext.AddObject( obj, _client.BaseUrl );
       }
+
+      var copy = _PreviousStream;
+      var copy2 = Stream;
+
 
       Transmitting = false;
       Expired = false;
@@ -183,6 +205,12 @@ namespace SpeckleClientUI
       {
         PropertyChanged( this, new PropertyChangedEventArgs( info ) );
       }
+    }
+
+    // fully commits objects
+    public void CommitStage( )
+    {
+      PreviousStream = SpeckleStream.FromJson( Stream.ToJson() ); 
     }
 
   }

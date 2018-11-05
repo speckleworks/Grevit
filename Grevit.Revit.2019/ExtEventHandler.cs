@@ -21,18 +21,10 @@ namespace Grevit.Revit
     /// <param name="app"></param>
     public void Execute( UIApplication app )
     {
-      var deleted = Receiver.PreviousStream.Objects.Except( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
-      var added = Receiver.Stream.Objects.Except( Receiver.PreviousStream.Objects, new SpeckleObjectComparer() ).ToList();
-      //var unchanged = Receiver.PreviousStream.Objects.Intersect( Receiver.Stream.Objects, new SpeckleObjectComparer() ).ToList();
-
-
-      //var pizza = SpeckleCore.Converter.Deserialise(Receiver.Stream.Objects);
-
       var units = ( ( string ) Receiver.Stream.BaseProperties.units ).ToLower();
 
       // TODO: Check
       double scale = 1;
-
       switch ( units )
       {
         case "kilometers":
@@ -56,17 +48,24 @@ namespace Grevit.Revit
         case "inches":
           scale = 0.0833333;
           break;
-
       };
 
-      //var myGrevit = new GrevitBuildModel( app.ActiveUIDocument.Document );
+      try
+      {
+        var deleted = Receiver.PreviousStream.Objects.Where( old => !Receiver.Stream.Objects.Any( o => o._id == old._id ) ).ToList();
 
-      //myGrevit.SpeckleBake( added, deleted, unchanged, scale );
+        var added = Receiver.Stream.Objects.Where( obj => !Receiver.PreviousStream.Objects.Any( o => o._id == obj._id ) ).ToList();
 
-      //Builder.Build( null, scale );
+        var pause = "here";
 
-      if(deleted.Count > 0) Receiver.Builder.Delete( deleted );
-      if(added.Count > 0) Receiver.Builder.Add( added, scale );
+        if ( deleted != null && deleted.Count > 0 ) Receiver.Builder.Delete( deleted );
+        if ( added != null && added.Count > 0 ) Receiver.Builder.Add( added, scale );
+        Receiver.CommitStage();
+
+      }
+      catch(Exception  e) {
+        Receiver.Builder.Add( Receiver.Stream.Objects, scale );
+      }
 
       //grevit.BuildModel( new Grevit.Types.ComponentCollection()
       //{

@@ -972,8 +972,8 @@ namespace Grevit.Revit
           if ( param != null && !param.IsReadOnly ) { param.Set( offset ); }
         }
 
-        w.SetParameters( wall );
-        w.StoreGID( wall.Id );
+        w.SetParameters( wall, host );
+        w.StoreGID( wall.Id, host );
 
         return wall;
       }
