@@ -100,6 +100,7 @@ namespace SpeckleClientUI
       {
         UpdateMeta();
         Stream = _client.Stream;
+        PreviousStream = new SpeckleStream() { Objects = new List<SpeckleObject>() };
       };
 
       _client.OnWsMessage += OnWsMessage;
